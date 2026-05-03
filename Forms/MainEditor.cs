@@ -104,6 +104,7 @@ namespace NewEditor.Forms
         public static TrainerEditor trainerEditor;
         public static TypeSwapEditor typeSwapEditor;
         public static RandomMovesEditor presetMovesEditor;
+        public static LearnsetRandomizerFvxForm learnsetFvxEditor;
         public static PokemartEditor pokemartEditor;
         public static GrottoEditor grottoEditor;
         public static ExpCurveEditor xpCurveEditor;
@@ -160,6 +161,7 @@ namespace NewEditor.Forms
             if (overlayEditor != null && !overlayEditor.IsDisposed) list.Add(overlayEditor);
             if (typeSwapEditor != null && !typeSwapEditor.IsDisposed) list.Add(typeSwapEditor);
             if (presetMovesEditor != null && !presetMovesEditor.IsDisposed) list.Add(presetMovesEditor);
+            if (learnsetFvxEditor != null && !learnsetFvxEditor.IsDisposed) list.Add(learnsetFvxEditor);
             if (pokePatchEditor != null && !pokePatchEditor.IsDisposed) list.Add(pokePatchEditor);
             if (fileExplorer != null && !fileExplorer.IsDisposed) list.Add(fileExplorer);
             if (pokedexTools != null && !pokedexTools.IsDisposed) list.Add(pokedexTools);
@@ -402,6 +404,7 @@ namespace NewEditor.Forms
             if (overlayEditor != null && !overlayEditor.IsDisposed) overlayEditor.Close();
             if (typeSwapEditor != null && !typeSwapEditor.IsDisposed) typeSwapEditor.Close();
             if (presetMovesEditor != null && !presetMovesEditor.IsDisposed) presetMovesEditor.Close();
+            if (learnsetFvxEditor != null && !learnsetFvxEditor.IsDisposed) learnsetFvxEditor.Close();
             if (pokePatchEditor != null && !pokePatchEditor.IsDisposed) pokePatchEditor.Close();
             if (fileExplorer != null && !fileExplorer.IsDisposed) fileExplorer.Close();
             if (pokedexTools != null && !pokedexTools.IsDisposed) pokedexTools.Close();
@@ -804,6 +807,24 @@ namespace NewEditor.Forms
             ChangeTheme(null, null);
             presetMovesEditor.Show();
             presetMovesEditor.BringToFront();
+        }
+
+        public void OpenLearnsetFvxRandomizer(object sender, EventArgs e)
+        {
+            if (pokemonDataNarc == null || moveDataNarc == null || learnsetNarc == null || loadingNARCS)
+            {
+                MessageBox.Show("Necessary data files have not been loaded");
+                return;
+            }
+            if (RomType != RomType.BW1 && RomType != RomType.BW2)
+            {
+                MessageBox.Show("FVX learnset randomizer is for Gen 5 (BW / BW2) only.");
+                return;
+            }
+            if (learnsetFvxEditor == null || learnsetFvxEditor.IsDisposed) learnsetFvxEditor = new LearnsetRandomizerFvxForm();
+            ChangeTheme(null, null);
+            learnsetFvxEditor.Show();
+            learnsetFvxEditor.BringToFront();
         }
 
         private void testGameModeButton_Click(object sender, EventArgs e)
