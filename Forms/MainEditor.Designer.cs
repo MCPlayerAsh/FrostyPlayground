@@ -46,6 +46,7 @@ namespace NewEditor.Forms
             this.rogueModeButton = new System.Windows.Forms.Button();
             this.openPresetMoveEditorButton = new System.Windows.Forms.Button();
             this.openLearnsetFvxRandomizerButton = new System.Windows.Forms.Button();
+            this.openGeneShuffleButton = new System.Windows.Forms.Button();
             this.openTypeSwapEditorButton = new System.Windows.Forms.Button();
             this.typeShuffleButton = new System.Windows.Forms.Button();
             this.openMoveEditorButton = new System.Windows.Forms.Button();
@@ -182,10 +183,11 @@ namespace NewEditor.Forms
             this.groupBox1.Controls.Add(this.rogueModeButton);
             this.groupBox1.Controls.Add(this.openPresetMoveEditorButton);
             this.groupBox1.Controls.Add(this.openLearnsetFvxRandomizerButton);
+            this.groupBox1.Controls.Add(this.openGeneShuffleButton);
             this.groupBox1.Controls.Add(this.openTypeSwapEditorButton);
             this.groupBox1.Location = new System.Drawing.Point(508, 249);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(264, 270);
+            this.groupBox1.Size = new System.Drawing.Size(264, 315);
             this.groupBox1.TabIndex = 10;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Custom Game Modes";
@@ -213,7 +215,7 @@ namespace NewEditor.Forms
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(50, 161);
+            this.label3.Location = new System.Drawing.Point(50, 201);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(78, 16);
             this.label3.TabIndex = 17;
@@ -227,7 +229,7 @@ namespace NewEditor.Forms
             "Double",
             "Triple",
             "Rotation"});
-            this.stsFormatDropdown.Location = new System.Drawing.Point(130, 156);
+            this.stsFormatDropdown.Location = new System.Drawing.Point(130, 196);
             this.stsFormatDropdown.Name = "stsFormatDropdown";
             this.stsFormatDropdown.Size = new System.Drawing.Size(120, 24);
             this.stsFormatDropdown.TabIndex = 16;
@@ -244,7 +246,7 @@ namespace NewEditor.Forms
             // 
             // rogueModeButton
             // 
-            this.rogueModeButton.Location = new System.Drawing.Point(130, 210);
+            this.rogueModeButton.Location = new System.Drawing.Point(130, 250);
             this.rogueModeButton.Name = "rogueModeButton";
             this.rogueModeButton.Size = new System.Drawing.Size(120, 32);
             this.rogueModeButton.TabIndex = 14;
@@ -271,6 +273,16 @@ namespace NewEditor.Forms
             this.openLearnsetFvxRandomizerButton.Text = "FVX Learnsets";
             this.openLearnsetFvxRandomizerButton.UseVisualStyleBackColor = true;
             this.openLearnsetFvxRandomizerButton.Click += new System.EventHandler(this.OpenLearnsetFvxRandomizer);
+            // 
+            // openGeneShuffleButton
+            // 
+            this.openGeneShuffleButton.Location = new System.Drawing.Point(15, 150);
+            this.openGeneShuffleButton.Name = "openGeneShuffleButton";
+            this.openGeneShuffleButton.Size = new System.Drawing.Size(120, 32);
+            this.openGeneShuffleButton.TabIndex = 22;
+            this.openGeneShuffleButton.Text = "Gene Shuffle";
+            this.openGeneShuffleButton.UseVisualStyleBackColor = true;
+            this.openGeneShuffleButton.Click += new System.EventHandler(this.OpenGeneShuffle);
             // 
             // openTypeSwapEditorButton
             // 
@@ -767,6 +779,7 @@ namespace NewEditor.Forms
         private System.Windows.Forms.Button openScriptEditorButton;
         private System.Windows.Forms.Button openPresetMoveEditorButton;
         private System.Windows.Forms.Button openLearnsetFvxRandomizerButton;
+        private System.Windows.Forms.Button openGeneShuffleButton;
         private System.Windows.Forms.Button openTrainerEditorButton;
         private System.Windows.Forms.Button openEncounterEditorButton;
         public System.Windows.Forms.ProgressBar taskProgressBar;

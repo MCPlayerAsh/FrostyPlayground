@@ -59,6 +59,8 @@ namespace NewEditor.Forms
         //Rom Data
         public static NDSFileSystem fileSystem;
         private static string romType = "";
+        /// <summary>NDS internal rom id string (e.g. pokemon b, pokemon w2) for patch version checks.</summary>
+        public static string RomTypeId => romType;
         public static RomType RomType => (romType == "pokemon b2" || romType == "pokemon w2") ? RomType.BW2 : (romType == "pokemon b" || romType == "pokemon w") ? RomType.BW1 : (romType == "pokemon hg" || romType == "pokemon ss") ? RomType.HGSS : RomType.Other;
         public static bool BlackVersion => romType.IndexOf('b') != -1;
 
@@ -105,6 +107,7 @@ namespace NewEditor.Forms
         public static TypeSwapEditor typeSwapEditor;
         public static RandomMovesEditor presetMovesEditor;
         public static LearnsetRandomizerFvxForm learnsetFvxEditor;
+        public static GeneShuffleForm geneShuffleEditor;
         public static PokemartEditor pokemartEditor;
         public static GrottoEditor grottoEditor;
         public static ExpCurveEditor xpCurveEditor;
@@ -162,6 +165,7 @@ namespace NewEditor.Forms
             if (typeSwapEditor != null && !typeSwapEditor.IsDisposed) list.Add(typeSwapEditor);
             if (presetMovesEditor != null && !presetMovesEditor.IsDisposed) list.Add(presetMovesEditor);
             if (learnsetFvxEditor != null && !learnsetFvxEditor.IsDisposed) list.Add(learnsetFvxEditor);
+            if (geneShuffleEditor != null && !geneShuffleEditor.IsDisposed) list.Add(geneShuffleEditor);
             if (pokePatchEditor != null && !pokePatchEditor.IsDisposed) list.Add(pokePatchEditor);
             if (fileExplorer != null && !fileExplorer.IsDisposed) list.Add(fileExplorer);
             if (pokedexTools != null && !pokedexTools.IsDisposed) list.Add(pokedexTools);
@@ -405,6 +409,7 @@ namespace NewEditor.Forms
             if (typeSwapEditor != null && !typeSwapEditor.IsDisposed) typeSwapEditor.Close();
             if (presetMovesEditor != null && !presetMovesEditor.IsDisposed) presetMovesEditor.Close();
             if (learnsetFvxEditor != null && !learnsetFvxEditor.IsDisposed) learnsetFvxEditor.Close();
+            if (geneShuffleEditor != null && !geneShuffleEditor.IsDisposed) geneShuffleEditor.Close();
             if (pokePatchEditor != null && !pokePatchEditor.IsDisposed) pokePatchEditor.Close();
             if (fileExplorer != null && !fileExplorer.IsDisposed) fileExplorer.Close();
             if (pokedexTools != null && !pokedexTools.IsDisposed) pokedexTools.Close();
@@ -825,6 +830,24 @@ namespace NewEditor.Forms
             ChangeTheme(null, null);
             learnsetFvxEditor.Show();
             learnsetFvxEditor.BringToFront();
+        }
+
+        public void OpenGeneShuffle(object sender, EventArgs e)
+        {
+            if (pokemonDataNarc == null || moveDataNarc == null || learnsetNarc == null || evolutionsNarc == null || loadingNARCS)
+            {
+                MessageBox.Show("Necessary data files have not been loaded");
+                return;
+            }
+            if (RomType != RomType.BW1 && RomType != RomType.BW2)
+            {
+                MessageBox.Show("Gene Shuffle is for Gen 5 (BW / BW2) only.");
+                return;
+            }
+            if (geneShuffleEditor == null || geneShuffleEditor.IsDisposed) geneShuffleEditor = new GeneShuffleForm();
+            ChangeTheme(null, null);
+            geneShuffleEditor.Show();
+            geneShuffleEditor.BringToFront();
         }
 
         private void testGameModeButton_Click(object sender, EventArgs e)

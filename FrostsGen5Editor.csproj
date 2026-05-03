@@ -157,6 +157,11 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerOptions.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxSpeciesMovesetRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxTmTutorCompatibilityRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxLearnsetPipeline.cs" />
+    <Compile Include="Data\Randomization\GeneShuffle\EvolutionFamilyIndex.cs" />
+    <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleFairyPatch.cs" />
+    <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleOptions.cs" />
+    <Compile Include="Data\Randomization\GeneShuffle\TypeGeneRandomizer.cs" />
     <Compile Include="Data\VersionConstants.cs" />
     <Compile Include="Data\Y9Table.cs" />
     <Compile Include="Forms\PokedexTools.cs">
@@ -261,6 +266,12 @@
     <Compile Include="Forms\LearnsetRandomizerFvxForm.Designer.cs">
       <DependentUpon>LearnsetRandomizerFvxForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\GeneShuffleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GeneShuffleForm.Designer.cs">
+      <DependentUpon>GeneShuffleForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ScriptEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -340,6 +351,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\LearnsetRandomizerFvxForm.resx">
       <DependentUpon>LearnsetRandomizerFvxForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GeneShuffleForm.resx">
+      <DependentUpon>GeneShuffleForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ScriptEditor.resx">
       <DependentUpon>ScriptEditor.cs</DependentUpon>

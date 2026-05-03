@@ -31,12 +31,6 @@ namespace NewEditor.Forms
                 return;
             }
 
-            if (!FvxGen5TmHmMoves.TryReadTmHmMoveOrder(MainEditor.fileSystem.arm9, out var tmHm, out var err))
-            {
-                MessageBox.Show("TM/HM table: " + err);
-                return;
-            }
-
             int seed = (int)seedNumeric.Value;
             var rnd = seed != 0 ? new Random(seed) : new Random();
 
@@ -56,23 +50,10 @@ namespace NewEditor.Forms
                 TutorFollowEvolutions = tutorFollowEvoCheck.Checked
             };
 
-            try
-            {
-                FvxSpeciesMovesetRandomizer.RandomizeLevelUp(opt, rnd, tmHm);
-                FvxSpeciesMovesetRandomizer.RandomizeEggMoves(opt, rnd, tmHm);
-                FvxTmTutorCompatibilityRandomizer.RandomizeTmHm(opt, rnd, tmHm);
-                IReadOnlyList<short> tutorIds;
-                if (MainEditor.RomType == RomType.BW2)
-                    tutorIds = FvxGen5TmHmMoves.ResolveBw2TutorMoveIds();
-                else
-                    tutorIds = Array.Empty<short>();
-                FvxTmTutorCompatibilityRandomizer.RandomizeTutors(opt, rnd, tutorIds);
+            if (!FvxLearnsetPipeline.TryRun(opt, rnd, out var err))
+                MessageBox.Show(string.IsNullOrEmpty(err) ? "FVX randomization failed." : err);
+            else
                 MessageBox.Show("FVX-style randomization applied. Save the ROM to keep changes.");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
         }
     }
 }
