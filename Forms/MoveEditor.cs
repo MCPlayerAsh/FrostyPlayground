@@ -105,11 +105,37 @@ namespace NewEditor.Forms
             new TextValue(8, "All"),
         };
 
+        TabControl moveEditorTabs;
+        TabPage tabPageMoveList;
+        TabPage tabPageEdit;
+        ListBox moveListBox;
+        Button editThisMoveFromListButton;
+        Label moveSummaryNameVal;
+        Label moveSummaryBpVal;
+        Label moveSummaryPpVal;
+        Label moveSummaryTypeVal;
+        Label moveSummaryCategoryVal;
+        Label moveSummaryDmgTypeVal;
+        Label moveSummaryAccVal;
+        Label moveSummaryTargetVal;
+
+        Panel moveListFilterPanel;
+        TextBox moveFilterName;
+        ComboBox moveFilterType;
+        ComboBox moveFilterDamageType;
+        NumericUpDown moveFilterPowerMin;
+        NumericUpDown moveFilterPowerMax;
+        NumericUpDown moveFilterAccMin;
+        NumericUpDown moveFilterAccMax;
+        Button moveFilterApplyButton;
+        Button moveFilterClearButton;
+        Label moveFilterResultCount;
+
         public MoveEditor()
         {
             InitializeComponent();
 
-            moveNameDropdown.Items.AddRange(moveDataNARC.moves.ToArray());
+            SetupMoveBrowserTabs();
 
             moveTypeDropdown.Items.AddRange(textNARC.textFiles[VersionConstants.TypeNameTextFileID].text.ToArray());
             moveCategoryDropdown.Items.AddRange(categories.ToArray());
@@ -121,6 +147,10 @@ namespace NewEditor.Forms
             statChangeStatDropdown3.Items.AddRange(statChanges.ToArray());
 
             statusEffectDropdown.Items.AddRange(statusEffects.ToArray());
+
+            // After all dropdown lists exist — selecting move triggers LoadMoveIntoEditor which sets type/category/etc.
+            RefreshMoveLists();
+
             addMovesButton.Enabled = moveDataNARC.moves.Count < 1000;
 
             //Check for move expansion
@@ -132,6 +162,406 @@ namespace NewEditor.Forms
                 addMovesButton.Visible = true;
                 addMovesButton.Enabled = true;
             }
+        }
+
+        void SetupMoveBrowserTabs()
+        {
+            moveEditorTabs = new TabControl { Dock = DockStyle.Fill };
+            tabPageMoveList = new TabPage("Move List");
+            tabPageEdit = new TabPage("Edit move") { AutoScroll = true };
+
+            var existingControls = Controls.Cast<Control>().ToList();
+            Controls.Clear();
+            foreach (Control c in existingControls)
+                tabPageEdit.Controls.Add(c);
+
+            var split = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Vertical,
+                SplitterDistance = Math.Max(380, (ClientSize.Width - 40) / 2),
+                BorderStyle = BorderStyle.FixedSingle
+            };
+
+            moveListBox = new ListBox
+            {
+                Dock = DockStyle.Fill,
+                IntegralHeight = false,
+                HorizontalScrollbar = true
+            };
+            moveListBox.SelectedIndexChanged += MoveListBox_SelectedIndexChanged;
+            moveListBox.MouseDoubleClick += (_, ev) =>
+            {
+                if (ev.Button == MouseButtons.Left) EditThisMoveFromList();
+            };
+
+            moveListFilterPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 150,
+                Padding = new Padding(8)
+            };
+
+            var typeNames = textNARC.textFiles[VersionConstants.TypeNameTextFileID].text;
+            moveFilterName = new TextBox { Dock = DockStyle.Fill };
+            moveFilterType = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Dock = DockStyle.Fill
+            };
+            moveFilterType.Items.Add("Any");
+            foreach (var tn in typeNames) moveFilterType.Items.Add(tn);
+            moveFilterType.SelectedIndex = 0;
+
+            moveFilterDamageType = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Dock = DockStyle.Fill
+            };
+            moveFilterDamageType.Items.AddRange(new object[] { "Any", "Physical", "Special", "Status" });
+            moveFilterDamageType.SelectedIndex = 0;
+
+            moveFilterPowerMin = new NumericUpDown { Dock = DockStyle.Fill, Minimum = 0, Maximum = 255, Value = 0 };
+            moveFilterPowerMax = new NumericUpDown { Dock = DockStyle.Fill, Minimum = 0, Maximum = 255, Value = 255 };
+
+            moveFilterAccMin = new NumericUpDown { Dock = DockStyle.Fill, Minimum = 0, Maximum = 101, Value = 0 };
+            moveFilterAccMax = new NumericUpDown { Dock = DockStyle.Fill, Minimum = 0, Maximum = 101, Value = 101 };
+
+            moveFilterApplyButton = new Button { Text = "Apply filters", AutoSize = true, Anchor = AnchorStyles.Left };
+            moveFilterApplyButton.Click += (_, __) => RebuildMoveListFromFilters();
+            moveFilterClearButton = new Button { Text = "Clear filters", AutoSize = true, Anchor = AnchorStyles.Left };
+            moveFilterClearButton.Click += (_, __) => ClearMoveFilters();
+
+            moveFilterResultCount = new Label
+            {
+                AutoSize = true,
+                Text = "",
+                Anchor = AnchorStyles.Right | AnchorStyles.Top,
+                TextAlign = ContentAlignment.MiddleRight
+            };
+
+            var filterGrid = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 8,
+                RowCount = 3,
+                AutoSize = false,
+                Margin = new Padding(0)
+            };
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));           // name label
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48f));       // name value
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));           // type label
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 52f));       // type value
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));           // power/acc label
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 56));       // min
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));           // dash
+            filterGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 56));       // max
+            filterGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+            filterGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+            filterGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+
+            var nameLabel = new Label { Text = "Name:", AutoSize = true, Anchor = AnchorStyles.Left };
+            var typeLabel = new Label { Text = "Type:", AutoSize = true, Anchor = AnchorStyles.Left };
+            var dmgLabel = new Label { Text = "Damage:", AutoSize = true, Anchor = AnchorStyles.Left };
+            var pwrLabel = new Label { Text = "Power:", AutoSize = true, Anchor = AnchorStyles.Left };
+            var accLabel = new Label { Text = "Accuracy:", AutoSize = true, Anchor = AnchorStyles.Left };
+
+            var pwrDash = new Label { Text = "to", AutoSize = true, Anchor = AnchorStyles.None };
+            var accDash = new Label { Text = "to", AutoSize = true, Anchor = AnchorStyles.None };
+            var buttonsPanel = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0), Dock = DockStyle.Fill };
+            buttonsPanel.Controls.Add(moveFilterApplyButton);
+            buttonsPanel.Controls.Add(moveFilterClearButton);
+
+            filterGrid.Controls.Add(nameLabel, 0, 0);
+            filterGrid.Controls.Add(moveFilterName, 1, 0);
+            filterGrid.SetColumnSpan(moveFilterName, 3);
+            filterGrid.Controls.Add(typeLabel, 4, 0);
+            filterGrid.Controls.Add(moveFilterType, 5, 0);
+            filterGrid.SetColumnSpan(moveFilterType, 3);
+
+            filterGrid.Controls.Add(dmgLabel, 0, 1);
+            filterGrid.Controls.Add(moveFilterDamageType, 1, 1);
+            filterGrid.SetColumnSpan(moveFilterDamageType, 3);
+            filterGrid.Controls.Add(pwrLabel, 4, 1);
+            filterGrid.Controls.Add(moveFilterPowerMin, 5, 1);
+            filterGrid.Controls.Add(pwrDash, 6, 1);
+            filterGrid.Controls.Add(moveFilterPowerMax, 7, 1);
+
+            filterGrid.Controls.Add(accLabel, 0, 2);
+            filterGrid.Controls.Add(moveFilterAccMin, 1, 2);
+            filterGrid.Controls.Add(accDash, 2, 2);
+            filterGrid.Controls.Add(moveFilterAccMax, 3, 2);
+            filterGrid.Controls.Add(buttonsPanel, 4, 2);
+            filterGrid.SetColumnSpan(buttonsPanel, 2);
+            filterGrid.Controls.Add(moveFilterResultCount, 6, 2);
+            filterGrid.SetColumnSpan(moveFilterResultCount, 2);
+
+            moveListFilterPanel.Controls.Add(filterGrid);
+
+            var leftListHost = new Panel { Dock = DockStyle.Fill };
+            leftListHost.Controls.Add(moveListBox);
+            leftListHost.Controls.Add(moveListFilterPanel);
+
+            var rightPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8) };
+            var btnStrip = new Panel { Dock = DockStyle.Top, Height = 44 };
+            editThisMoveFromListButton = new Button
+            {
+                Text = "Edit this move",
+                AutoSize = true,
+                Location = new Point(8, 8)
+            };
+            editThisMoveFromListButton.Click += (_, __) => EditThisMoveFromList();
+            btnStrip.Controls.Add(editThisMoveFromListButton);
+
+            var summaryBox = new GroupBox
+            {
+                Text = "Quick stats (read-only)",
+                Dock = DockStyle.Fill,
+                Padding = new Padding(8)
+            };
+
+            var tbl = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 8,
+                AutoSize = true
+            };
+            tbl.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 118));
+            tbl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+
+            moveSummaryNameVal = AddMoveSummaryRow(tbl, "Name / ID:", 0);
+            moveSummaryBpVal = AddMoveSummaryRow(tbl, "Base power:", 1);
+            moveSummaryPpVal = AddMoveSummaryRow(tbl, "PP:", 2);
+            moveSummaryTypeVal = AddMoveSummaryRow(tbl, "Type:", 3);
+            moveSummaryCategoryVal = AddMoveSummaryRow(tbl, "Category:", 4);
+            moveSummaryDmgTypeVal = AddMoveSummaryRow(tbl, "Damage type:", 5);
+            moveSummaryAccVal = AddMoveSummaryRow(tbl, "Accuracy:", 6);
+            moveSummaryTargetVal = AddMoveSummaryRow(tbl, "Target:", 7);
+
+            summaryBox.Controls.Add(tbl);
+            rightPanel.Controls.Add(summaryBox);
+            rightPanel.Controls.Add(btnStrip);
+
+            split.Panel1.Controls.Add(leftListHost);
+            split.Panel2.Controls.Add(rightPanel);
+
+            tabPageMoveList.Controls.Add(split);
+
+            moveEditorTabs.TabPages.Add(tabPageMoveList);
+            moveEditorTabs.TabPages.Add(tabPageEdit);
+
+            moveEditorTabs.SelectedIndexChanged += MoveEditorTabs_SelectedIndexChanged;
+
+            Controls.Add(moveEditorTabs);
+        }
+
+        void MoveEditorTabs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (moveEditorTabs?.SelectedTab != tabPageEdit || moveListBox == null) return;
+            if (moveListBox.SelectedIndex < 0) return;
+            if (moveListBox.SelectedItem is MoveDataEntry m && moveNameDropdown != null &&
+                moveNameDropdown.SelectedIndex != m.nameID)
+                moveNameDropdown.SelectedIndex = m.nameID;
+        }
+
+        static Label AddMoveSummaryRow(TableLayoutPanel tbl, string caption, int row)
+        {
+            var left = new Label { Text = caption, AutoSize = true, Anchor = AnchorStyles.Left };
+            var val = new Label { Text = "—", AutoSize = true, Anchor = AnchorStyles.Left, MaximumSize = new Size(380, 0) };
+            tbl.Controls.Add(left, 0, row);
+            tbl.Controls.Add(val, 1, row);
+            return val;
+        }
+
+        void RefreshMoveLists()
+        {
+            moveNameDropdown.Items.Clear();
+            moveNameDropdown.Items.AddRange(moveDataNARC.moves.ToArray());
+            if (moveFilterName != null)
+                ClearMoveFilters();
+            else if (moveListBox != null)
+            {
+                moveListBox.BeginUpdate();
+                moveListBox.Items.Clear();
+                moveListBox.Items.AddRange(moveDataNARC.moves.ToArray());
+                moveListBox.EndUpdate();
+                UpdateMoveFilterCountLabel(moveListBox.Items.Count, moveDataNARC.moves.Count);
+            }
+            if (moveNameDropdown.Items.Count > 0)
+                moveNameDropdown.SelectedIndex = 0;
+        }
+
+        void ClearMoveFilters()
+        {
+            if (moveFilterName == null) return;
+            moveFilterName.Text = "";
+            moveFilterType.SelectedIndex = 0;
+            moveFilterDamageType.SelectedIndex = 0;
+            moveFilterPowerMin.Value = 0;
+            moveFilterPowerMax.Value = 255;
+            moveFilterAccMin.Value = 0;
+            moveFilterAccMax.Value = 101;
+            RebuildMoveListFromFilters();
+        }
+
+        void RebuildMoveListFromFilters()
+        {
+            if (moveListBox == null || moveDataNARC?.moves == null) return;
+
+            var filtered = new List<MoveDataEntry>();
+            foreach (MoveDataEntry m in moveDataNARC.moves)
+            {
+                if (MovePassesFilters(m))
+                    filtered.Add(m);
+            }
+
+            moveListBox.BeginUpdate();
+            moveListBox.Items.Clear();
+            foreach (var m in filtered)
+                moveListBox.Items.Add(m);
+            moveListBox.EndUpdate();
+
+            UpdateMoveFilterCountLabel(filtered.Count, moveDataNARC.moves.Count);
+
+            if (filtered.Count > 0)
+                moveListBox.SelectedIndex = 0;
+            else
+                ClearMoveListSummary();
+        }
+
+        void UpdateMoveFilterCountLabel(int shown, int total)
+        {
+            if (moveFilterResultCount != null)
+                moveFilterResultCount.Text = $"Showing {shown} of {total} moves";
+        }
+
+        bool MovePassesFilters(MoveDataEntry m)
+        {
+            if (moveFilterName != null)
+            {
+                string q = moveFilterName.Text.Trim();
+                if (q.Length > 0)
+                {
+                    string display = GetMoveNameForFilter(m);
+                    if (display.IndexOf(q, StringComparison.OrdinalIgnoreCase) < 0)
+                        return false;
+                }
+            }
+
+            if (moveFilterType != null && moveFilterType.SelectedIndex > 0)
+            {
+                byte wantType = (byte)(moveFilterType.SelectedIndex - 1);
+                if (m.element != wantType) return false;
+            }
+
+            if (moveFilterDamageType != null && moveFilterDamageType.SelectedIndex > 0)
+            {
+                byte wantDmg = MapDamageFilterComboIndexToDamageType(moveFilterDamageType.SelectedIndex);
+                if (m.damageType != wantDmg) return false;
+            }
+
+            int pmin = (int)moveFilterPowerMin.Value;
+            int pmax = (int)moveFilterPowerMax.Value;
+            if (pmin > pmax) { int t = pmin; pmin = pmax; pmax = t; }
+            if (m.basePower < pmin || m.basePower > pmax) return false;
+
+            int amin = (int)moveFilterAccMin.Value;
+            int amax = (int)moveFilterAccMax.Value;
+            if (amin > amax) { int t = amin; amin = amax; amax = t; }
+            if (m.accuracy < amin || m.accuracy > amax) return false;
+
+            return true;
+        }
+
+        static byte MapDamageFilterComboIndexToDamageType(int comboIndex)
+        {
+            if (comboIndex == 1) return 1;
+            if (comboIndex == 2) return 2;
+            if (comboIndex == 3) return 0;
+            return 255;
+        }
+
+        string GetMoveNameForFilter(MoveDataEntry m)
+        {
+            try
+            {
+                var names = textNARC.textFiles[VersionConstants.MoveNameTextFileID].text;
+                if (m.nameID >= 0 && m.nameID < names.Count)
+                    return names[m.nameID];
+            }
+            catch { /* ignore */ }
+            return m.ToString();
+        }
+
+        void SelectMoveListRowByNameId(int nameId)
+        {
+            if (moveListBox == null) return;
+            for (int i = 0; i < moveListBox.Items.Count; i++)
+            {
+                if (moveListBox.Items[i] is MoveDataEntry me && me.nameID == nameId)
+                {
+                    if (moveListBox.SelectedIndex != i)
+                        moveListBox.SelectedIndex = i;
+                    return;
+                }
+            }
+            moveListBox.SelectedIndex = -1;
+            ClearMoveListSummary();
+        }
+
+        void MoveListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (moveListBox?.SelectedItem is MoveDataEntry m)
+                UpdateMoveListSummary(m);
+            else
+                ClearMoveListSummary();
+        }
+
+        void ClearMoveListSummary()
+        {
+            if (moveSummaryNameVal == null) return;
+            moveSummaryNameVal.Text = "—";
+            moveSummaryBpVal.Text = "—";
+            moveSummaryPpVal.Text = "—";
+            moveSummaryTypeVal.Text = "—";
+            moveSummaryCategoryVal.Text = "—";
+            moveSummaryDmgTypeVal.Text = "—";
+            moveSummaryAccVal.Text = "—";
+            moveSummaryTargetVal.Text = "—";
+        }
+
+        void UpdateMoveListSummary(MoveDataEntry m)
+        {
+            if (moveSummaryNameVal == null) return;
+
+            moveSummaryNameVal.Text = m.ToString();
+            moveSummaryBpVal.Text = m.basePower.ToString(CultureInfo.InvariantCulture);
+            moveSummaryPpVal.Text = m.powerPoints.ToString(CultureInfo.InvariantCulture);
+
+            var typeNames = textNARC.textFiles[VersionConstants.TypeNameTextFileID].text;
+            moveSummaryTypeVal.Text = m.element < typeNames.Count ? typeNames[m.element] : ("Unknown (" + m.element + ")");
+
+            moveSummaryCategoryVal.Text = categories.FirstOrDefault(x => x.hexID == m.category)?.name ?? ("0x" + m.category.ToString("X2"));
+            moveSummaryDmgTypeVal.Text = damageTypes.FirstOrDefault(x => x.hexID == m.damageType)?.name ?? m.damageType.ToString(CultureInfo.InvariantCulture);
+            moveSummaryAccVal.Text = m.accuracy.ToString(CultureInfo.InvariantCulture);
+            moveSummaryTargetVal.Text = targetTypes.FirstOrDefault(x => x.hexID == m.target)?.name ?? m.target.ToString(CultureInfo.InvariantCulture);
+        }
+
+        void EditThisMoveFromList()
+        {
+            if (moveListBox == null || moveEditorTabs == null) return;
+            if (!(moveListBox.SelectedItem is MoveDataEntry m)) return;
+            moveNameDropdown.SelectedIndex = m.nameID;
+            moveEditorTabs.SelectedTab = tabPageEdit;
+        }
+
+        void SyncMoveListFromDropdown()
+        {
+            if (moveListBox == null || moveNameDropdown == null) return;
+            int slot = moveNameDropdown.SelectedIndex;
+            if (slot < 0) return;
+            SelectMoveListRowByNameId(slot);
         }
 
         private void LoadMoveIntoEditor(object sender, EventArgs e)
@@ -228,6 +658,8 @@ namespace NewEditor.Forms
                 {
                     flagsListBox.SetItemChecked(i, (m.flags & (int)Math.Pow(2, i)) != 0);
                 }
+
+                SyncMoveListFromDropdown();
             }
             else
             {
@@ -456,8 +888,7 @@ namespace NewEditor.Forms
             textNARC.textFiles[VersionConstants.MoveNameTextFileID].CompressData();
             textNARC.textFiles[VersionConstants.MoveDescriptionTextFileID].CompressData();
 
-            moveNameDropdown.Items.Clear();
-            moveNameDropdown.Items.AddRange(moveDataNARC.moves.ToArray());
+            RefreshMoveLists();
             addMovesButton.Enabled = false;
             addMovesButton.Visible = false;
         }

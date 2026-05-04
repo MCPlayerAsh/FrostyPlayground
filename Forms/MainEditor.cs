@@ -1,4 +1,4 @@
-﻿using NewEditor.Data;
+using NewEditor.Data;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
