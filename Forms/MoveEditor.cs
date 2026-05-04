@@ -130,6 +130,8 @@ namespace NewEditor.Forms
         Button moveFilterApplyButton;
         Button moveFilterClearButton;
         Label moveFilterResultCount;
+        const byte TypelessMoveTypeId = 18;
+        const string TypelessMoveTypeLabel = "Typeless";
 
         public MoveEditor()
         {
@@ -138,6 +140,7 @@ namespace NewEditor.Forms
             SetupMoveBrowserTabs();
 
             moveTypeDropdown.Items.AddRange(textNARC.textFiles[VersionConstants.TypeNameTextFileID].text.ToArray());
+            EnsureTypelessTypeOption(moveTypeDropdown);
             moveCategoryDropdown.Items.AddRange(categories.ToArray());
             moveDamageTypeDropdown.Items.AddRange(damageTypes.ToArray());
             moveTargetDropdown.Items.AddRange(targetTypes.ToArray());
@@ -211,6 +214,7 @@ namespace NewEditor.Forms
             };
             moveFilterType.Items.Add("Any");
             foreach (var tn in typeNames) moveFilterType.Items.Add(tn);
+            EnsureTypelessTypeOption(moveFilterType);
             moveFilterType.SelectedIndex = 0;
 
             moveFilterDamageType = new ComboBox
@@ -451,7 +455,7 @@ namespace NewEditor.Forms
 
             if (moveFilterType != null && moveFilterType.SelectedIndex > 0)
             {
-                byte wantType = (byte)(moveFilterType.SelectedIndex - 1);
+                byte wantType = GetSelectedFilterTypeId();
                 if (m.element != wantType) return false;
             }
 
@@ -539,8 +543,7 @@ namespace NewEditor.Forms
             moveSummaryBpVal.Text = m.basePower.ToString(CultureInfo.InvariantCulture);
             moveSummaryPpVal.Text = m.powerPoints.ToString(CultureInfo.InvariantCulture);
 
-            var typeNames = textNARC.textFiles[VersionConstants.TypeNameTextFileID].text;
-            moveSummaryTypeVal.Text = m.element < typeNames.Count ? typeNames[m.element] : ("Unknown (" + m.element + ")");
+            moveSummaryTypeVal.Text = GetMoveTypeDisplayName(m.element);
 
             moveSummaryCategoryVal.Text = categories.FirstOrDefault(x => x.hexID == m.category)?.name ?? ("0x" + m.category.ToString("X2"));
             moveSummaryDmgTypeVal.Text = damageTypes.FirstOrDefault(x => x.hexID == m.damageType)?.name ?? m.damageType.ToString(CultureInfo.InvariantCulture);
@@ -568,7 +571,7 @@ namespace NewEditor.Forms
         {
             if (moveNameDropdown.SelectedItem is MoveDataEntry m)
             {
-                moveTypeDropdown.SelectedIndex = m.element;
+                moveTypeDropdown.SelectedIndex = GetMoveTypeDropdownIndexFromTypeId(m.element);
                 moveCategoryDropdown.SelectedItem = categories.First(l => l.hexID == m.category);
                 moveDamageTypeDropdown.SelectedItem = damageTypes.First(l => l.hexID == m.damageType);
                 moveTargetDropdown.SelectedItem = targetTypes.First(l => l.hexID == m.target);
@@ -680,7 +683,7 @@ namespace NewEditor.Forms
         {
             if (moveNameDropdown.SelectedItem is MoveDataEntry m)
             {
-                m.element = (byte)moveTypeDropdown.SelectedIndex;
+                m.element = GetSelectedMoveTypeId();
                 m.category = (byte)((TextValue)moveCategoryDropdown.SelectedItem).hexID;
                 m.damageType = (byte)((TextValue)moveDamageTypeDropdown.SelectedItem).hexID;
                 m.target = (byte)((TextValue)moveTargetDropdown.SelectedItem).hexID;
@@ -724,6 +727,51 @@ namespace NewEditor.Forms
 
                 statusText.Text = "Saved move data for " + m.ToString() + " - " + DateTime.Now.StatusText();
             }
+        }
+
+        void EnsureTypelessTypeOption(ComboBox combo)
+        {
+            if (combo == null) return;
+            if (!combo.Items.Contains(TypelessMoveTypeLabel))
+                combo.Items.Add(TypelessMoveTypeLabel);
+        }
+
+        byte GetSelectedFilterTypeId()
+        {
+            if (moveFilterType?.SelectedItem is string selected &&
+                string.Equals(selected, TypelessMoveTypeLabel, StringComparison.OrdinalIgnoreCase))
+                return TypelessMoveTypeId;
+
+            return (byte)(moveFilterType.SelectedIndex - 1);
+        }
+
+        int GetMoveTypeDropdownIndexFromTypeId(byte typeId)
+        {
+            if (moveTypeDropdown == null) return -1;
+            if (typeId == TypelessMoveTypeId)
+            {
+                int typelessIndex = moveTypeDropdown.Items.IndexOf(TypelessMoveTypeLabel);
+                if (typelessIndex >= 0) return typelessIndex;
+            }
+
+            return typeId < moveTypeDropdown.Items.Count ? typeId : -1;
+        }
+
+        byte GetSelectedMoveTypeId()
+        {
+            if (moveTypeDropdown?.SelectedItem is string selected &&
+                string.Equals(selected, TypelessMoveTypeLabel, StringComparison.OrdinalIgnoreCase))
+                return TypelessMoveTypeId;
+
+            return moveTypeDropdown.SelectedIndex >= 0 ? (byte)moveTypeDropdown.SelectedIndex : (byte)0;
+        }
+
+        string GetMoveTypeDisplayName(byte typeId)
+        {
+            if (typeId == TypelessMoveTypeId) return TypelessMoveTypeLabel;
+
+            var typeNames = textNARC.textFiles[VersionConstants.TypeNameTextFileID].text;
+            return typeId < typeNames.Count ? typeNames[typeId] : ("Unknown (" + typeId + ")");
         }
 
         private void renameMoveButton_Click(object sender, EventArgs e)
@@ -877,7 +925,10 @@ namespace NewEditor.Forms
                     textNARC.textFiles[VersionConstants.MoveUsageTextFileID].text.Add(textNARC.textFiles[VersionConstants.MoveUsageTextFileID].text[4]);
                     textNARC.textFiles[VersionConstants.MoveUsageTextFileID].text.Add(textNARC.textFiles[VersionConstants.MoveUsageTextFileID].text[5]);
                 }
-                if (moveDataNARC.moves.Count <= 680) textNARC.textFiles[VersionConstants.MoveNameTextFileID].text[moveDataNARC.moves.Count - 1] = "DontUse";
+                if (moveDataNARC.moves.Count <= 680)
+                    textNARC.textFiles[VersionConstants.MoveNameTextFileID].text[moveDataNARC.moves.Count - 1] = "DontUse";
+                else
+                    textNARC.textFiles[VersionConstants.MoveNameTextFileID].text[moveDataNARC.moves.Count - 1] = "Empty";
             }
             while (moveAnimNARC.animations.Count < moveAmount)
             {

@@ -29,9 +29,10 @@ namespace NewEditor.Data.Randomization.FvxGen5
             var hmIds = new HashSet<int>();
             if (tmHmMoveIds != null)
                 foreach (var id in tmHmMoveIds) hmIds.Add(id);
+            var moveNames = MainEditor.textNarc.textFiles[VersionConstants.MoveNameTextFileID].text;
 
             var extraBanned = new List<int>();
-            CreateMovePools(rnd, moves, noBroken, hmIds, extraBanned, out var validMoves, out var validDamaging,
+            CreateMovePools(rnd, moves, moveNames, noBroken, hmIds, extraBanned, out var validMoves, out var validDamaging,
                 out var validTypeMoves, out var validTypeDamaging);
 
             int n = Math.Min(pokemon.Count, learnsets.Count);
@@ -134,8 +135,9 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
             var hmIds = new HashSet<int>();
             if (tmHmMoveIds != null) foreach (var id in tmHmMoveIds) hmIds.Add(id);
+            var moveNames = MainEditor.textNarc.textFiles[VersionConstants.MoveNameTextFileID].text;
             var extraBanned = new List<int>();
-            CreateMovePools(rnd, moves, noBroken, hmIds, extraBanned, out var validMoves, out var validDamaging,
+            CreateMovePools(rnd, moves, moveNames, noBroken, hmIds, extraBanned, out var validMoves, out var validDamaging,
                 out var validTypeMoves, out var validTypeDamaging);
 
             int n = Math.Min(pokemon.Count, egg.Count);
@@ -182,7 +184,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
             }
         }
 
-        static void CreateMovePools(Random rnd, List<MoveDataEntry> allMoves, bool noBroken, HashSet<int> hmIds, List<int> extraBanned,
+        static void CreateMovePools(Random rnd, List<MoveDataEntry> allMoves, IReadOnlyList<string> moveNames, bool noBroken, HashSet<int> hmIds, List<int> extraBanned,
             out List<MoveDataEntry> validMoves, out List<MoveDataEntry> validDamaging,
             out Dictionary<byte, List<MoveDataEntry>> validTypeMoves,
             out Dictionary<byte, List<MoveDataEntry>> validTypeDamaging)
@@ -198,6 +200,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 if (mv == null) continue;
                 int id = mv.nameID;
                 if (id < 0 || id >= allMoves.Count) continue;
+                if (ShouldIgnoreMoveForRandomizer(id, moveNames)) continue;
                 if (FvxGen5MoveBanList.IsBannedFromRandomPools(id) || ban.Contains(id)) continue;
                 if (mv.category == 9) continue;
                 validMoves.Add(mv);
@@ -213,6 +216,18 @@ namespace NewEditor.Data.Randomization.FvxGen5
             }
 
             BalanceTypePowers(validMoves, validTypeMoves, validTypeDamaging, rnd);
+        }
+
+        static bool ShouldIgnoreMoveForRandomizer(int moveId, IReadOnlyList<string> moveNames)
+        {
+            if (moveId >= 560 && moveId <= 679) return true; // reserved DontUse block
+            if (moveId >= 680)
+            {
+                string name = moveId < moveNames.Count ? moveNames[moveId] : string.Empty;
+                if (string.Equals(name, "Empty", StringComparison.OrdinalIgnoreCase)) return true;
+                if (string.Equals(name, "Pound", StringComparison.OrdinalIgnoreCase)) return true; // legacy placeholder fallback
+            }
+            return false;
         }
 
         static void BalanceTypePowers(List<MoveDataEntry> validMoves, Dictionary<byte, List<MoveDataEntry>> validTypeMoves,
