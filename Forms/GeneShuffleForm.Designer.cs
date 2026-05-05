@@ -89,7 +89,7 @@ namespace NewEditor.Forms
             movesetModCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             movesetModCombo.Location = new System.Drawing.Point(10, 22);
             movesetModCombo.Size = new System.Drawing.Size(390, 24);
-            movesetModCombo.Items.AddRange(new object[] { "Unchanged", "Completely random", "Random (prefer same type)" });
+            movesetModCombo.Items.AddRange(new object[] { "Unchanged", "Completely random", "Random (prefer same type)", "Metronome only" });
             movesetModCombo.SelectedIndex = 1;
             blockBrokenMovesCheck.Text = "Block broken moves (SonicBoom / Dragon Rage)";
             blockBrokenMovesCheck.Location = new System.Drawing.Point(10, 52);

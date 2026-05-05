@@ -4,7 +4,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
     {
         Unchanged,
         CompletelyRandom,
-        RandomPreferSameType
+        RandomPreferSameType,
+        MetronomeOnly
     }
 
     public enum FvxTmHmCompatMod

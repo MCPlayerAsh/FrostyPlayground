@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -158,6 +158,15 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxSpeciesMovesetRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxTmTutorCompatibilityRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxLearnsetPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\TypeSystemContext.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5FullSettings.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxMoveDataRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxPokemonTraitsRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxTrainerPokemonRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxWildEncounterRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5SettingsPersistence.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5PlaceholderStages.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5RandomizerOrchestrator.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\EvolutionFamilyIndex.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleFairyPatch.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleOptions.cs" />
@@ -265,6 +274,9 @@
     </Compile>
     <Compile Include="Forms\LearnsetRandomizerFvxForm.Designer.cs">
       <DependentUpon>LearnsetRandomizerFvxForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FvxGen5RandomizerForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\GeneShuffleForm.cs">
       <SubType>Form</SubType>

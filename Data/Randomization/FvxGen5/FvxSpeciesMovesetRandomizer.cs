@@ -19,6 +19,27 @@ namespace NewEditor.Data.Randomization.FvxGen5
             var moves = MainEditor.moveDataNarc.moves;
             var pokemon = MainEditor.pokemonDataNarc.pokemon;
             var learnsets = MainEditor.learnsetNarc.learnsets;
+
+            if (opt.MovesetsMod == FvxMovesetsMod.MetronomeOnly)
+            {
+                int met = FvxGen5Constants.MetronomeMoveId;
+                if (met < 0 || met >= moves.Count) return;
+                int nMet = Math.Min(pokemon.Count, learnsets.Count);
+                for (int pkmnNum = 0; pkmnNum < nMet; pkmnNum++)
+                {
+                    var pk = pokemon[pkmnNum];
+                    var ls = learnsets[pkmnNum];
+                    if (ls?.moves == null) continue;
+                    var movesList = new List<LevelUpMoveSlot>(ls.moves);
+                    for (int i = 0; i < movesList.Count; i++)
+                        movesList[i] = new LevelUpMoveSlot((short)met, movesList[i].level);
+                    ls.moves = movesList;
+                    ls.ApplyData();
+                    pk.levelUpMoves = ls;
+                }
+                return;
+            }
+
             bool typeThemed = opt.MovesetsMod == FvxMovesetsMod.RandomPreferSameType;
             bool noBroken = opt.BlockBrokenMovesetMoves;
             bool forceStarting = MainEditor.RomType != RomType.HGSS && opt.StartWithGuaranteedMoves;
@@ -124,6 +145,23 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public static void RandomizeEggMoves(FvxRandomizerOptions opt, Random rnd, IReadOnlyList<short> tmHmMoveIds)
         {
             if (!opt.RandomizeEggMoves || opt.MovesetsMod == FvxMovesetsMod.Unchanged) return;
+            if (opt.MovesetsMod == FvxMovesetsMod.MetronomeOnly)
+            {
+                if (MainEditor.eggMoveNarc?.entries == null || MainEditor.moveDataNarc?.moves == null) return;
+                int met = FvxGen5Constants.MetronomeMoveId;
+                if (met < 0 || met >= MainEditor.moveDataNarc.moves.Count) return;
+                var eggEntries = MainEditor.eggMoveNarc.entries;
+                for (int pkmnNum = 0; pkmnNum < eggEntries.Count; pkmnNum++)
+                {
+                    var entry = eggEntries[pkmnNum];
+                    if (entry?.moves == null) continue;
+                    for (int i = 0; i < entry.moves.Count; i++)
+                        entry.moves[i] = (short)met;
+                    entry.ApplyData();
+                }
+                return;
+            }
+
             if (MainEditor.eggMoveNarc?.entries == null || MainEditor.moveDataNarc?.moves == null) return;
 
             var moves = MainEditor.moveDataNarc.moves;

@@ -1,4 +1,4 @@
-
+﻿
 namespace NewEditor.Forms
 {
     partial class MainEditor
@@ -47,6 +47,7 @@ namespace NewEditor.Forms
             this.openPresetMoveEditorButton = new System.Windows.Forms.Button();
             this.openLearnsetFvxRandomizerButton = new System.Windows.Forms.Button();
             this.openGeneShuffleButton = new System.Windows.Forms.Button();
+            this.randomizeFvxButton = new System.Windows.Forms.Button();
             this.openTypeSwapEditorButton = new System.Windows.Forms.Button();
             this.typeShuffleButton = new System.Windows.Forms.Button();
             this.openMoveEditorButton = new System.Windows.Forms.Button();
@@ -184,6 +185,7 @@ namespace NewEditor.Forms
             this.groupBox1.Controls.Add(this.openPresetMoveEditorButton);
             this.groupBox1.Controls.Add(this.openLearnsetFvxRandomizerButton);
             this.groupBox1.Controls.Add(this.openGeneShuffleButton);
+            this.groupBox1.Controls.Add(this.randomizeFvxButton);
             this.groupBox1.Controls.Add(this.openTypeSwapEditorButton);
             this.groupBox1.Location = new System.Drawing.Point(508, 249);
             this.groupBox1.Name = "groupBox1";
@@ -283,6 +285,16 @@ namespace NewEditor.Forms
             this.openGeneShuffleButton.Text = "Gene Shuffle";
             this.openGeneShuffleButton.UseVisualStyleBackColor = true;
             this.openGeneShuffleButton.Click += new System.EventHandler(this.OpenGeneShuffle);
+            // 
+            // randomizeFvxButton
+            // 
+            this.randomizeFvxButton.Location = new System.Drawing.Point(145, 150);
+            this.randomizeFvxButton.Name = "randomizeFvxButton";
+            this.randomizeFvxButton.Size = new System.Drawing.Size(115, 32);
+            this.randomizeFvxButton.TabIndex = 23;
+            this.randomizeFvxButton.Text = "Randomize…";
+            this.randomizeFvxButton.UseVisualStyleBackColor = true;
+            this.randomizeFvxButton.Click += new System.EventHandler(this.OpenFvxGen5Randomizer);
             // 
             // openTypeSwapEditorButton
             // 
@@ -780,6 +792,7 @@ namespace NewEditor.Forms
         private System.Windows.Forms.Button openPresetMoveEditorButton;
         private System.Windows.Forms.Button openLearnsetFvxRandomizerButton;
         private System.Windows.Forms.Button openGeneShuffleButton;
+        private System.Windows.Forms.Button randomizeFvxButton;
         private System.Windows.Forms.Button openTrainerEditorButton;
         private System.Windows.Forms.Button openEncounterEditorButton;
         public System.Windows.Forms.ProgressBar taskProgressBar;

@@ -18,5 +18,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
         public const int CutMoveId = 15;
         public const int StruggleMoveId = 165;
+
+        /// <summary>Gen 5 Metronome move ID.</summary>
+        public const int MetronomeMoveId = 118;
     }
 }

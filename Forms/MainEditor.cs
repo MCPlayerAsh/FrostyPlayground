@@ -1,4 +1,4 @@
-using NewEditor.Data;
+﻿using NewEditor.Data;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
+using NewEditor.Data.Randomization.FvxGen5;
 using NewEditor.Data.NARCTypes;
 using System.Threading;
 using System.Runtime.InteropServices;
@@ -108,6 +109,7 @@ namespace NewEditor.Forms
         public static RandomMovesEditor presetMovesEditor;
         public static LearnsetRandomizerFvxForm learnsetFvxEditor;
         public static GeneShuffleForm geneShuffleEditor;
+        public static FvxGen5RandomizerForm fvxGen5RandomizerForm;
         public static PokemartEditor pokemartEditor;
         public static GrottoEditor grottoEditor;
         public static ExpCurveEditor xpCurveEditor;
@@ -166,6 +168,7 @@ namespace NewEditor.Forms
             if (presetMovesEditor != null && !presetMovesEditor.IsDisposed) list.Add(presetMovesEditor);
             if (learnsetFvxEditor != null && !learnsetFvxEditor.IsDisposed) list.Add(learnsetFvxEditor);
             if (geneShuffleEditor != null && !geneShuffleEditor.IsDisposed) list.Add(geneShuffleEditor);
+            if (fvxGen5RandomizerForm != null && !fvxGen5RandomizerForm.IsDisposed) list.Add(fvxGen5RandomizerForm);
             if (pokePatchEditor != null && !pokePatchEditor.IsDisposed) list.Add(pokePatchEditor);
             if (fileExplorer != null && !fileExplorer.IsDisposed) list.Add(fileExplorer);
             if (pokedexTools != null && !pokedexTools.IsDisposed) list.Add(pokedexTools);
@@ -848,6 +851,25 @@ namespace NewEditor.Forms
             ChangeTheme(null, null);
             geneShuffleEditor.Show();
             geneShuffleEditor.BringToFront();
+        }
+
+        public void OpenFvxGen5Randomizer(object sender, EventArgs e)
+        {
+            if (pokemonDataNarc == null || moveDataNarc == null || learnsetNarc == null || loadingNARCS)
+            {
+                MessageBox.Show("Necessary data files have not been loaded");
+                return;
+            }
+            if (RomType != RomType.BW1 && RomType != RomType.BW2)
+            {
+                MessageBox.Show("FVX-style randomizer supports Black/White and Black 2/White 2 only.");
+                return;
+            }
+            if (fvxGen5RandomizerForm == null || fvxGen5RandomizerForm.IsDisposed)
+                fvxGen5RandomizerForm = new FvxGen5RandomizerForm();
+            ChangeTheme(null, null);
+            fvxGen5RandomizerForm.Show();
+            fvxGen5RandomizerForm.BringToFront();
         }
 
         private void testGameModeButton_Click(object sender, EventArgs e)
