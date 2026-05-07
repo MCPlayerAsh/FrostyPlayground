@@ -32,7 +32,7 @@ namespace NewEditor.Forms
         NumericUpDown coreGuaranteedCount, coreGoodDamagingPct;
         CheckBox mdPower, mdAcc, mdPp, mdType, mdCat, mdName, mdGenUp;
         NumericUpDown mdGen;
-        CheckBox tmShuffleMoveList, tmShuffleTutorList;
+        CheckBox tmShuffleMoveList, tmShuffleTutorList, tmSyncItemMeta;
         ComboBox startersModeCombo, staticsModeCombo, tradesModeCombo;
         ComboBox fieldItemsCombo, shopCombo, pickupCombo;
         CheckBox miscFastText, miscNatDex, miscFastEgg, miscChallenge, miscForgetHm;
@@ -150,7 +150,7 @@ namespace NewEditor.Forms
             tradesModeCombo = AddLabeledCombo(gb, "Trades:", 10, 88, new[] { "Unchanged", "Randomize given only", "Randomize both" }, 240);
             gb.Controls.Add(new Label
             {
-                Text = "Full script/trade support is a future FVX port. Orchestrator logs when options ≠ Unchanged.",
+                Text = "Statics: US B2/W2 script patches. Trades: US B/W trade script species only (trade NARC not edited).",
                 Location = new Point(10, 130),
                 Size = new Size(780, 36),
                 ForeColor = Color.DimGray
@@ -222,9 +222,10 @@ namespace NewEditor.Forms
             }
             p.Controls.Add(gb);
 
-            gb = new GroupBox { Text = "Move lists (stub)", Location = new Point(8, 134), Size = new Size(820, 70) };
-            tmShuffleMoveList = AddCheck(gb, "Randomize TM/HM move lists (ARM9 — not applied)", 10, 22);
-            tmShuffleTutorList = AddCheck(gb, "Randomize tutor move lists (not applied)", 380, 22);
+            gb = new GroupBox { Text = "Move lists (ARM9 / overlay)", Location = new Point(8, 134), Size = new Size(820, 96) };
+            tmShuffleMoveList = AddCheck(gb, "Randomize TM move list (ARM9; HMs unchanged)", 10, 22);
+            tmShuffleTutorList = AddCheck(gb, "Randomize tutor move list (BW2 overlay 36)", 380, 22);
+            tmSyncItemMeta = AddCheck(gb, "After TM shuffle: sync item descriptions + TM palette colors (recommended)", 10, 50);
             p.Controls.Add(gb);
         }
 
@@ -239,7 +240,7 @@ namespace NewEditor.Forms
 
         void BuildMiscContent(Panel p)
         {
-            var gb = new GroupBox { Text = "Misc (binary patches — stub)", Location = new Point(8, 8), Size = new Size(820, 120) };
+            var gb = new GroupBox { Text = "Misc (ARM9 / script / optional IPS under Patches\\Gen5\\)", Location = new Point(8, 8), Size = new Size(820, 120) };
             miscFastText = AddCheck(gb, "Fastest text", 10, 22);
             miscNatDex = AddCheck(gb, "National Dex at start", 160, 22);
             miscFastEgg = AddCheck(gb, "Fast egg hatch", 340, 22);
@@ -312,6 +313,7 @@ namespace NewEditor.Forms
 
             tmShuffleMoveList.Checked = _settings.TmHmTutorExtras.RandomizeTmMoveList;
             tmShuffleTutorList.Checked = _settings.TmHmTutorExtras.RandomizeTutorMoveList;
+            tmSyncItemMeta.Checked = _settings.TmHmTutorExtras.SyncTmItemDescriptionsAndPalettes;
 
             startersModeCombo.SelectedIndex = Math.Min(startersModeCombo.Items.Count - 1, (int)_settings.StartersStaticsTrades.StartersMode);
             staticsModeCombo.SelectedIndex = Math.Min(staticsModeCombo.Items.Count - 1, (int)_settings.StartersStaticsTrades.StaticsMode);
@@ -384,6 +386,7 @@ namespace NewEditor.Forms
 
             _settings.TmHmTutorExtras.RandomizeTmMoveList = tmShuffleMoveList.Checked;
             _settings.TmHmTutorExtras.RandomizeTutorMoveList = tmShuffleTutorList.Checked;
+            _settings.TmHmTutorExtras.SyncTmItemDescriptionsAndPalettes = tmSyncItemMeta.Checked;
 
             _settings.StartersStaticsTrades.StartersMode = (FvxStartersMode)startersModeCombo.SelectedIndex;
             _settings.StartersStaticsTrades.StaticsMode = (FvxTrainerPokemonMode)staticsModeCombo.SelectedIndex;

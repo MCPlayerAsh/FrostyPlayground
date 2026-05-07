@@ -31,6 +31,17 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
                 FvxMoveDataRandomizer.Apply(settings.MoveData, rnd, ctx);
 
+                if (!FvxGen5MoveListStages.ApplyRandomizeTmMoveList(settings.TmHmTutorExtras, rnd, log))
+                {
+                    report = log.ToString();
+                    return false;
+                }
+                if (!FvxGen5MoveListStages.ApplyRandomizeTutorMoveList(settings.TmHmTutorExtras, rnd, log))
+                {
+                    report = log.ToString();
+                    return false;
+                }
+
                 if (!FvxLearnsetPipeline.TryRun(settings.Core, rnd, out var learnErr))
                 {
                     log.AppendLine("Learnset/TM pipeline: " + learnErr);
@@ -39,7 +50,6 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 }
                 log.AppendLine("Learnsets / TM-HM compat / tutors: OK.");
 
-                FvxGen5PlaceholderStages.TmHmMoveListShuffle(settings, log);
                 FvxGen5PlaceholderStages.StartersStaticsTrades(settings, rnd, log);
 
                 FvxTrainerPokemonRandomizer.Apply(settings.Foe, rnd, ctx);

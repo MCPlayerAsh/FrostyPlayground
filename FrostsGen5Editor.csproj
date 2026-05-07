@@ -154,6 +154,17 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveBanList.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveScoring.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5TmHmMoves.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TmItemMetadataSync.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5FieldItemsRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5Bw2UsStaticSpeciesSites.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StaticsTradesRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5Ips.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MiscTweaks.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5OverlayIo.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5UsRomTables.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveListStages.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5ItemsRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StartersRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerOptions.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxSpeciesMovesetRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxTmTutorCompatibilityRandomizer.cs" />

@@ -28,7 +28,12 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 FvxTmTutorCompatibilityRandomizer.RandomizeTmHm(opt, rnd, tmHm);
                 IReadOnlyList<short> tutorIds;
                 if (MainEditor.RomType == RomType.BW2)
-                    tutorIds = FvxGen5TmHmMoves.ResolveBw2TutorMoveIds();
+                {
+                    if (FvxGen5TmHmMoves.TryReadBw2TutorMovesFromOverlay(out var overlayTutors, out _))
+                        tutorIds = overlayTutors;
+                    else
+                        tutorIds = FvxGen5TmHmMoves.ResolveBw2TutorMoveIds();
+                }
                 else
                     tutorIds = Array.Empty<short>();
                 FvxTmTutorCompatibilityRandomizer.RandomizeTutors(opt, rnd, tutorIds);

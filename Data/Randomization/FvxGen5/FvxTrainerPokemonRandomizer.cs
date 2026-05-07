@@ -30,7 +30,11 @@ namespace NewEditor.Data.Randomization.FvxGen5
             }
         }
 
-        static short PickSpecies(FvxFoePokemonSettings foe, Random rnd, short currentId, int maxSpecies, List<PokemonEntry> pkData)
+        static short PickSpecies(FvxFoePokemonSettings foe, Random rnd, short currentId, int maxSpecies, List<PokemonEntry> pkData) =>
+            PickReplacementSpecies(foe.TrainerPokemon, foe.DontUseLegendaries, foe.SimilarStrengthWindowPercent, rnd, currentId, maxSpecies, pkData);
+
+        /// <summary>Shared by trainer, static encounter, and trade randomizers.</summary>
+        public static short PickReplacementSpecies(FvxTrainerPokemonMode mode, bool dontUseLegendaries, int similarStrengthWindowPercent, Random rnd, short currentId, int maxSpecies, List<PokemonEntry> pkData)
         {
             int cur = Math.Max(0, Math.Min((int)currentId, pkData.Count - 1));
             int curBst = pkData[cur].baseStatTotal;
@@ -38,11 +42,11 @@ namespace NewEditor.Data.Randomization.FvxGen5
             for (int attempt = 0; attempt < 200; attempt++)
             {
                 int s = rnd.Next(1, maxSpecies + 1);
-                if (foe.DontUseLegendaries && IsLegendaryish(pkData, s)) continue;
-                if (foe.TrainerPokemon == FvxTrainerPokemonMode.RandomSimilarStrength)
+                if (dontUseLegendaries && IsLegendaryish(pkData, s)) continue;
+                if (mode == FvxTrainerPokemonMode.RandomSimilarStrength)
                 {
                     int bst = pkData[s].baseStatTotal;
-                    int w = Math.Max(5, foe.SimilarStrengthWindowPercent);
+                    int w = Math.Max(5, similarStrengthWindowPercent);
                     if (Math.Abs(bst - curBst) > curBst * w / 100) continue;
                 }
                 return (short)s;

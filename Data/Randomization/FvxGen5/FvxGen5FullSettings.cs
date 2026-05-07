@@ -103,6 +103,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public bool RandomizeTmMoveList { get; set; }
         public bool RandomizeTutorMoveList { get; set; }
         public bool NoGameBreakingMovesInTms { get; set; } = true;
+        /// <summary>When TM list is randomized, copy move descriptions into TM item text and refresh TM palette words (UPR setTMMoves follow-up).</summary>
+        public bool SyncTmItemDescriptionsAndPalettes { get; set; } = true;
     }
 
     public sealed class FvxItemsSettings

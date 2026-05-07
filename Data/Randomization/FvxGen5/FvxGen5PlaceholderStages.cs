@@ -4,7 +4,7 @@ using NewEditor.Forms;
 
 namespace NewEditor.Data.Randomization.FvxGen5
 {
-    /// <summary>Stages not yet ported from UPR FVX (scripts, marts, ARM9 tweaks).</summary>
+    /// <summary>Stages partially ported; remaining options log as skipped.</summary>
     public static class FvxGen5PlaceholderStages
     {
         public static void StartersStaticsTrades(FvxGen5FullSettings s, Random rnd, StringBuilder log)
@@ -13,7 +13,11 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 && s.StartersStaticsTrades.StaticsMode == FvxTrainerPokemonMode.Unchanged
                 && s.StartersStaticsTrades.TradesMode == FvxTradesMode.Unchanged)
                 return;
-            log.AppendLine("[Starters / Statics / Trades] Not fully implemented — requires script/NARC mapping (FVX port). Options were not applied.");
+
+            FvxGen5StartersRandomizer.Apply(s.StartersStaticsTrades, rnd, log);
+
+            FvxGen5StaticsTradesRandomizer.ApplyStatics(s.StartersStaticsTrades, s.Foe, rnd, log);
+            FvxGen5StaticsTradesRandomizer.ApplyTrades(s.StartersStaticsTrades.TradesMode, s.Foe, rnd, log);
         }
 
         public static void Items(FvxGen5FullSettings s, Random rnd, StringBuilder log)
@@ -22,21 +26,14 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 && s.Items.ShopItems == FvxShopItemsMode.Unchanged
                 && s.Items.Pickup == FvxPickupMode.Unchanged)
                 return;
-            log.AppendLine("[Items] Field / shop / pickup randomization not yet implemented (FVX port). Options were not applied.");
+
+            FvxGen5ItemsRandomizer.Apply(s.Items, rnd, log);
         }
 
         public static void MiscTweaks(FvxGen5FullSettings s, StringBuilder log)
         {
-            if (!s.Misc.FastestText && !s.Misc.GiveNationalDexAtStart && !s.Misc.FastEggHatching
-                && !s.Misc.ForceChallengeMode && !s.Misc.ForgettableHms)
-                return;
-            log.AppendLine("[Misc Tweaks] Binary patch modules not yet wired — options were not applied.");
+            FvxGen5MiscTweaks.Apply(s.Misc, log);
         }
 
-        public static void TmHmMoveListShuffle(FvxGen5FullSettings s, StringBuilder log)
-        {
-            if (!s.TmHmTutorExtras.RandomizeTmMoveList && !s.TmHmTutorExtras.RandomizeTutorMoveList) return;
-            log.AppendLine("[TM/HM move lists] Randomizing TM/HM move table in ARM9 is not implemented yet. Compatibility flags in Core still apply.");
-        }
     }
 }
