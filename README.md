@@ -7,7 +7,8 @@ I have bastardized this program beyond recognition. Curse my lack of care and my
 ```
 
 
-https://github.com/MCPlayerAsh/FrostyPlayground/raw/f01cd948d95d6da620ce18649114c142c57943db/2Toriel.mov
+<video src="https://github.com/MCPlayerAsh/FrostyPlayground/raw/82d1bf366173c6af128c22268f03024ce1a6c670/2Toriel.mp4" controls width="700"></video>
+
 
 
 # Frost's Gen 5 Editor #
