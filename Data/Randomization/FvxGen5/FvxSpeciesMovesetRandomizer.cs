@@ -12,10 +12,18 @@ namespace NewEditor.Data.Randomization.FvxGen5
     public static class FvxSpeciesMovesetRandomizer
     {
         const int PerfectAccuracy = 100;
+        const int MetronomeMoveId = 118;
+        const byte MetronomeOnlyPp = 40;
 
         public static void RandomizeLevelUp(FvxRandomizerOptions opt, Random rnd, IReadOnlyList<short> tmHmMoveIds)
         {
             if (opt.MovesetsMod == FvxMovesetsMod.Unchanged) return;
+            if (opt.MovesetsMod == FvxMovesetsMod.MetronomeOnlyMode)
+            {
+                ApplyMetronomeOnlyMovePp();
+                ApplyMetronomeOnlyLevelUpLearnsets();
+                return;
+            }
             var moves = MainEditor.moveDataNarc.moves;
             var pokemon = MainEditor.pokemonDataNarc.pokemon;
             var learnsets = MainEditor.learnsetNarc.learnsets;
@@ -44,6 +52,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
             bool noBroken = opt.BlockBrokenMovesetMoves;
             bool forceStarting = MainEditor.RomType != RomType.HGSS && opt.StartWithGuaranteedMoves;
             int forceCount = Math.Max(2, Math.Min(4, opt.GuaranteedMoveCount));
+            bool reorderDamaging = opt.ReorderDamagingMoves;
             double goodDamagingFrac = opt.MovesetsForceGoodDamaging ? opt.MovesetsGoodDamagingPercent / 100.0 : 0;
             bool evoMovesAll = opt.EvolutionMovesForAll;
 
@@ -118,15 +127,18 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     learnt.Add(mv.nameID);
                 }
 
-                Shuffle(learnt, rnd);
-                if (lv1index >= 0 && lv1index < learnt.Count && learnt[lv1index] != lv1AttackingMove)
+                if (reorderDamaging)
                 {
-                    int swap = learnt.IndexOf(lv1AttackingMove);
-                    if (swap >= 0)
+                    Shuffle(learnt, rnd);
+                    if (lv1index >= 0 && lv1index < learnt.Count && learnt[lv1index] != lv1AttackingMove)
                     {
-                        int t = learnt[lv1index];
-                        learnt[lv1index] = learnt[swap];
-                        learnt[swap] = t;
+                        int swap = learnt.IndexOf(lv1AttackingMove);
+                        if (swap >= 0)
+                        {
+                            int t = learnt[lv1index];
+                            learnt[lv1index] = learnt[swap];
+                            learnt[swap] = t;
+                        }
                     }
                 }
 
@@ -145,23 +157,11 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public static void RandomizeEggMoves(FvxRandomizerOptions opt, Random rnd, IReadOnlyList<short> tmHmMoveIds)
         {
             if (!opt.RandomizeEggMoves || opt.MovesetsMod == FvxMovesetsMod.Unchanged) return;
-            if (opt.MovesetsMod == FvxMovesetsMod.MetronomeOnly)
+            if (opt.MovesetsMod == FvxMovesetsMod.MetronomeOnlyMode)
             {
-                if (MainEditor.eggMoveNarc?.entries == null || MainEditor.moveDataNarc?.moves == null) return;
-                int met = FvxGen5Constants.MetronomeMoveId;
-                if (met < 0 || met >= MainEditor.moveDataNarc.moves.Count) return;
-                var eggEntries = MainEditor.eggMoveNarc.entries;
-                for (int pkmnNum = 0; pkmnNum < eggEntries.Count; pkmnNum++)
-                {
-                    var entry = eggEntries[pkmnNum];
-                    if (entry?.moves == null) continue;
-                    for (int i = 0; i < entry.moves.Count; i++)
-                        entry.moves[i] = (short)met;
-                    entry.ApplyData();
-                }
+                ApplyMetronomeOnlyEggMoves();
                 return;
             }
-
             if (MainEditor.eggMoveNarc?.entries == null || MainEditor.moveDataNarc?.moves == null) return;
 
             var moves = MainEditor.moveDataNarc.moves;
@@ -404,6 +404,45 @@ namespace NewEditor.Data.Randomization.FvxGen5
             {
                 int j = rnd.Next(i + 1);
                 (list[i], list[j]) = (list[j], list[i]);
+            }
+        }
+
+        static void ApplyMetronomeOnlyMovePp()
+        {
+            if (MainEditor.moveDataNarc?.moves == null) return;
+            if (MetronomeMoveId < 0 || MetronomeMoveId >= MainEditor.moveDataNarc.moves.Count) return;
+            var metronome = MainEditor.moveDataNarc.moves[MetronomeMoveId];
+            if (metronome == null) return;
+            metronome.powerPoints = MetronomeOnlyPp;
+            metronome.ApplyData();
+        }
+
+        static void ApplyMetronomeOnlyLevelUpLearnsets()
+        {
+            if (MainEditor.pokemonDataNarc?.pokemon == null || MainEditor.learnsetNarc?.learnsets == null) return;
+            var pokemon = MainEditor.pokemonDataNarc.pokemon;
+            var learnsets = MainEditor.learnsetNarc.learnsets;
+            int n = Math.Min(pokemon.Count, learnsets.Count);
+            for (int pkmnNum = 0; pkmnNum < n; pkmnNum++)
+            {
+                var ls = learnsets[pkmnNum];
+                if (ls?.moves == null || ls.moves.Count == 0) continue;
+                for (int i = 0; i < ls.moves.Count; i++)
+                    ls.moves[i] = new LevelUpMoveSlot(MetronomeMoveId, ls.moves[i].level);
+                ls.ApplyData();
+                pokemon[pkmnNum].levelUpMoves = ls;
+            }
+        }
+
+        static void ApplyMetronomeOnlyEggMoves()
+        {
+            if (MainEditor.eggMoveNarc?.entries == null) return;
+            foreach (var entry in MainEditor.eggMoveNarc.entries)
+            {
+                if (entry?.moves == null || entry.moves.Count == 0) continue;
+                for (int i = 0; i < entry.moves.Count; i++)
+                    entry.moves[i] = MetronomeMoveId;
+                entry.ApplyData();
             }
         }
     }

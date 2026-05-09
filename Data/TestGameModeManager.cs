@@ -42,10 +42,10 @@ namespace NewEditor.Data
 
         public static void NoStoryMode()
         {
-            Program.main.taskProgressBar.Minimum = 1;
-            Program.main.taskProgressBar.Maximum = 3;
-            Program.main.taskProgressBar.Value = 1;
-            Program.main.taskProgressBar.Step = 1;
+            MainEditor.Instance.taskProgressBar.Minimum = 1;
+            MainEditor.Instance.taskProgressBar.Maximum = 3;
+            MainEditor.Instance.taskProgressBar.Value = 1;
+            MainEditor.Instance.taskProgressBar.Step = 1;
 
             random = new Random();
             foreach (OverworldObjectsEntry o in MainEditor.overworldsNarc.objects)
@@ -58,14 +58,14 @@ namespace NewEditor.Data
                 if (!GymZones.Contains(MainEditor.overworldsNarc.objects.IndexOf(o))) o.triggers?.Clear();
             }
 
-            Program.main.taskProgressBar.PerformStep();
+            MainEditor.Instance.taskProgressBar.PerformStep();
 
             MainEditor.scriptNarc.scriptFiles[856].bytes = StarterHouseGivesStarterScriptBytes.ToArray();
             ModifyStarterHouseText();
 
             SwapWarps(453, 1, 252, 0);
 
-            Program.main.taskProgressBar.PerformStep();
+            MainEditor.Instance.taskProgressBar.PerformStep();
 
             //Routes 19, 20, Floccesy ranch
             RandomizeEncounters(164, 2, 4);
@@ -163,7 +163,7 @@ namespace NewEditor.Data
             RandomizeEncounters(95, 52, 54);
             for (int n = 96; n <= 104; n++) CopyEncounters(95, n);
 
-            Program.main.taskProgressBar.PerformStep();
+            MainEditor.Instance.taskProgressBar.PerformStep();
 
             MessageBox.Show("No Story Mode Loaded");
         }
@@ -326,7 +326,7 @@ namespace NewEditor.Data
                 if (!GymZones.Contains(MainEditor.overworldsNarc.objects.IndexOf(o))) o.triggers?.Clear();
             }
 
-            Program.main.taskProgressBar.PerformStep();
+            MainEditor.Instance.taskProgressBar.PerformStep();
 
             MainEditor.scriptNarc.scriptFiles[856].bytes = StarterHouseGivesStarterScriptBytes.ToArray();
             ModifyStarterHouseText();

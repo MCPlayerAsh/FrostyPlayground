@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NewEditor.Forms;
 
 namespace NewEditor.Data
 {
@@ -98,20 +99,20 @@ namespace NewEditor.Data
                 if (pak_len < 8)
                 {
                     System.Diagnostics.Debug.WriteLine("\nFile has a bad header\n");
-                    Program.main.Close();
+                    MainEditor.Instance.Close();
                     return null;
                 }
                 hdr_len = pak_buffer[pak_len - 5];
                 if (hdr_len < 8 || hdr_len > 0xB)
                 {
                     System.Diagnostics.Debug.WriteLine("\nBad header length\n");
-                    Program.main.Close();
+                    MainEditor.Instance.Close();
                     return null;
                 }
                 if (pak_len <= hdr_len)
                 {
                     System.Diagnostics.Debug.WriteLine("\nBad length\n");
-                    Program.main.Close();
+                    MainEditor.Instance.Close();
                     return null;
                 }
                 enc_len = readUnsigned(pak_buffer, pak_len - 8) & 0x00FFFFFF;
@@ -121,7 +122,7 @@ namespace NewEditor.Data
                 if (raw_len > RAW_MAXIM)
                 {
                     System.Diagnostics.Debug.WriteLine("\nBad decoded length\n");
-                    Program.main.Close();
+                    MainEditor.Instance.Close();
                     return null;
                 }
             }

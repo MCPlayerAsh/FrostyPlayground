@@ -55,22 +55,22 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject />
+    <StartupObject>NewEditor.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DSDecmp">
       <HintPath>.\DSDecmp.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.10.0.0-preview.6.25358.103\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.9.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="System.IO.Pipelines, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.IO.Pipelines.10.0.0-preview.6.25358.103\lib\net462\System.IO.Pipelines.dll</HintPath>
+    <Reference Include="System.IO.Pipelines, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.IO.Pipelines.9.0.0\lib\net462\System.IO.Pipelines.dll</HintPath>
     </Reference>
     <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
@@ -82,11 +82,11 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Encodings.Web, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Encodings.Web.10.0.0-preview.6.25358.103\lib\net462\System.Text.Encodings.Web.dll</HintPath>
+    <Reference Include="System.Text.Encodings.Web, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Encodings.Web.9.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Json.10.0.0-preview.6.25358.103\lib\net462\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Json.9.0.0\lib\net462\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Threading.Tasks.Extensions.4.6.3\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -150,34 +150,64 @@
     <Compile Include="Data\TextHandler.cs" />
     <Compile Include="Data\TypeShuffler.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5Constants.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5RomOffsets.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TypeSupport.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5RomLayout.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TypeChart.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StartersStaticsTradesRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TradeScriptPatcher.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5EvolutionGraph.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveBanList.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveScoring.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5TmHmMoves.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TmItemMetadataSync.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5FieldItemsRandomizer.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5Bw2UsStaticSpeciesSites.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StaticsTradesRandomizer.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5Ips.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MiscTweaks.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5OverlayIo.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5UsRomTables.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveListStages.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5ItemsRandomizer.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StartersRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxTutorMoveRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerOptions.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxSpeciesMovesetRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxTmTutorCompatibilityRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxLearnsetPipeline.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\TypeSystemContext.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5FullSettings.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxMoveDataRandomizer.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxPokemonTraitsRandomizer.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxTrainerPokemonRandomizer.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxWildEncounterRandomizer.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5SettingsPersistence.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5PlaceholderStages.cs" />
-    <Compile Include="Data\Randomization\FvxGen5\FvxGen5RandomizerOrchestrator.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxStartersStaticsTradesOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxStartersStaticsTradesPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TradeStoryText.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StarterAssetPatcher.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5AbilityBanLists.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5EvolutionMethods.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxPokemonTraitsOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxBaseStatRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxAbilityRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxEvolutionRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxPokemonTraitsPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxFoePokemonOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5NonStandardSpecies.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxFoePokemonPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxFoePokemonRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerGlobalOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5IrregularFormes.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxPrematureEvoLegality.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxEvolutionAllowlistPruner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGlobalSpeciesPoolFilter.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxCustomNamesDefaults.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxCustomNamesSet.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxIntroMonRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerRaceChecksum.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerConfigFile.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxItemsOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxItemsPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxMiscTweaksOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxMiscTweaksPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MiscTweaksRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MiscRuntimeState.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\Gen5EliteFourFallback.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\Gen5GymEliteTypeThemes.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxFoeTrainerEnums.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\Gen5TrainerLists.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\Gen5UpTrainerTags.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxTrainerTagClassification.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5HeldItemPools.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxRivalStarterResolver.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxMakeRivalCarryStarter.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\EvolutionFamilyIndex.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleFairyPatch.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleOptions.cs" />
@@ -295,11 +325,35 @@
     <Compile Include="Forms\GeneShuffleForm.Designer.cs">
       <DependentUpon>GeneShuffleForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\ScriptEditor.cs">
+    <Compile Include="Forms\PokemonTraitsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\PokemonTraitsControl.Designer.cs">
+      <DependentUpon>PokemonTraitsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\TmHmTutorsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\GeneShuffleControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\GeneShuffleControl.Designer.cs">
+      <DependentUpon>GeneShuffleControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FvxRandomizerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\ScriptEditor.Designer.cs">
-      <DependentUpon>ScriptEditor.cs</DependentUpon>
+    <Compile Include="Forms\FvxRandomizerForm.Designer.cs">
+      <DependentUpon>FvxRandomizerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FvxRandomizerForm.Settings.cs">
+      <DependentUpon>FvxRandomizerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FvxCustomNamesEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FvxLimitPokemonForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\OverlayEditor.cs">
       <SubType>Form</SubType>
@@ -378,8 +432,14 @@
     <EmbeddedResource Include="Forms\GeneShuffleForm.resx">
       <DependentUpon>GeneShuffleForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ScriptEditor.resx">
-      <DependentUpon>ScriptEditor.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\PokemonTraitsControl.resx">
+      <DependentUpon>PokemonTraitsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GeneShuffleControl.resx">
+      <DependentUpon>GeneShuffleControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FvxRandomizerForm.resx">
+      <DependentUpon>FvxRandomizerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\OverlayEditor.resx">
       <DependentUpon>OverlayEditor.cs</DependentUpon>
@@ -407,6 +467,12 @@
       <DependentUpon>TextViewer.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
+    <None Include="Patches\instant_text\*.ips">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Patches\national_dex\*.ips">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Patches\Black1Fairy.Vpatch">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

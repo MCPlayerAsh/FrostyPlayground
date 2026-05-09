@@ -1,5 +1,6 @@
 using NewEditor.Data;
 using NewEditor.Data.NARCTypes;
+using NewEditor.Data.Randomization.GeneShuffle;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -110,6 +112,8 @@ namespace NewEditor.Forms
         TabPage tabPageEdit;
         ListBox moveListBox;
         Button editThisMoveFromListButton;
+        Button addMovesFromListButton;
+        ToolTip moveEditorToolTip;
         Label moveSummaryNameVal;
         Label moveSummaryBpVal;
         Label moveSummaryPpVal;
@@ -132,12 +136,38 @@ namespace NewEditor.Forms
         Label moveFilterResultCount;
         const byte TypelessMoveTypeId = 18;
         const string TypelessMoveTypeLabel = "Typeless";
+        const string AddMovesTooltipText = "If move slots are not expanded yet, you will be prompted to apply the Fairy type patch (it also expands move slots).";
+        const string MoveTransferFormat = "FrostyPlayground.MoveTransfer";
+        const int MoveTransferVersion = 1;
+
+        readonly JsonSerializerOptions transferJsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
+        class MoveTransferPackage
+        {
+            public string format { get; set; }
+            public int version { get; set; }
+            public List<MoveTransferEntry> moves { get; set; }
+        }
+
+        class MoveTransferEntry
+        {
+            public int moveId { get; set; }
+            public byte[] moveDataBytes { get; set; }
+            public string name { get; set; }
+            public string description { get; set; }
+            public byte[] animationBytes { get; set; }
+        }
 
         public MoveEditor()
         {
             InitializeComponent();
 
             SetupMoveBrowserTabs();
+            moveEditorToolTip = new ToolTip();
+            moveEditorToolTip.SetToolTip(addMovesButton, AddMovesTooltipText);
 
             moveTypeDropdown.Items.AddRange(textNARC.textFiles[VersionConstants.TypeNameTextFileID].text.ToArray());
             EnsureTypelessTypeOption(moveTypeDropdown);
@@ -155,15 +185,19 @@ namespace NewEditor.Forms
             RefreshMoveLists();
 
             addMovesButton.Enabled = moveDataNARC.moves.Count < 1000;
+            if (addMovesFromListButton != null)
+                addMovesFromListButton.Enabled = addMovesButton.Enabled;
+            addMovesButton.Visible = true;
+            if (addMovesFromListButton != null)
+                addMovesFromListButton.Visible = true;
 
             //Check for move expansion
-            int start = MainEditor.RomType == RomType.BW1 ? 0x304A : 0x353A;
-            byte[] b = new byte[] { 0, 0, 0, 0, 0x88, 0x4b, 0x01, 0x28, 0x38, 0xD0 };
-            byte[] ov = MainEditor.fileSystem.overlays[MainEditor.RomType == RomType.BW1 ? 94 : 168].GetRange(start, 10).ToArray();
-            if (ov.SequenceEqual(b) && moveDataNARC.moves.Count < 1000)
+            bool expanded = IsMoveExpansionPatched();
+            if (expanded && moveDataNARC.moves.Count < 1000)
             {
-                addMovesButton.Visible = true;
                 addMovesButton.Enabled = true;
+                if (addMovesFromListButton != null)
+                    addMovesFromListButton.Enabled = true;
             }
         }
 
@@ -316,6 +350,18 @@ namespace NewEditor.Forms
             };
             editThisMoveFromListButton.Click += (_, __) => EditThisMoveFromList();
             btnStrip.Controls.Add(editThisMoveFromListButton);
+
+            addMovesFromListButton = new Button
+            {
+                Text = "Add Moves",
+                AutoSize = true,
+                Location = new Point(130, 8),
+                Visible = true,
+                Enabled = moveDataNARC.moves.Count < 1000
+            };
+            addMovesFromListButton.Click += addMovesButton_Click;
+            moveEditorToolTip?.SetToolTip(addMovesFromListButton, AddMovesTooltipText);
+            btnStrip.Controls.Add(addMovesFromListButton);
 
             var summaryBox = new GroupBox
             {
@@ -913,6 +959,28 @@ namespace NewEditor.Forms
 
         private void addMovesButton_Click(object sender, EventArgs e)
         {
+            if (!IsMoveExpansionPatched())
+            {
+                string prompt = "The move list has not been expanded yet.\n\n" +
+                                "The Fairy type patch also expands move slots.\n\n" +
+                                "Would you like to apply the patch now?";
+                DialogResult decision = MessageBox.Show(prompt, "Move List Not Expanded", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (decision != DialogResult.Yes)
+                    return;
+
+                if (!GeneShuffleFairyPatch.TryPrepare(true, out bool patchApplied, out string patchError))
+                {
+                    MessageBox.Show(patchError ?? "Failed to apply the Fairy patch.");
+                    return;
+                }
+
+                if (!patchApplied && !IsMoveExpansionPatched())
+                {
+                    MessageBox.Show("Fairy patch was not applied, and move slots are still not expanded.");
+                    return;
+                }
+            }
+
             int moveAmount = 1000;// moveDataNARC.moves.Count < 700 ? 800 : (moveDataNARC.moves.Count + 100);
             while (moveDataNARC.moves.Count < moveAmount)
             {
@@ -942,6 +1010,376 @@ namespace NewEditor.Forms
             RefreshMoveLists();
             addMovesButton.Enabled = false;
             addMovesButton.Visible = false;
+            if (addMovesFromListButton != null)
+            {
+                addMovesFromListButton.Enabled = false;
+                addMovesFromListButton.Visible = false;
+            }
+        }
+
+        bool IsMoveExpansionPatched()
+        {
+            int start = MainEditor.RomType == RomType.BW1 ? 0x304A : 0x353A;
+            byte[] expected = new byte[] { 0, 0, 0, 0, 0x88, 0x4b, 0x01, 0x28, 0x38, 0xD0 };
+            int overlayIndex = MainEditor.RomType == RomType.BW1 ? 94 : 168;
+            if (MainEditor.fileSystem?.overlays == null || MainEditor.fileSystem.overlays.Count <= overlayIndex)
+                return false;
+
+            var ov = MainEditor.fileSystem.overlays[overlayIndex];
+            if (ov == null || ov.Count < start + expected.Length)
+                return false;
+
+            return ov.GetRange(start, expected.Length).SequenceEqual(expected);
+        }
+
+        MoveTransferPackage BuildMoveTransferPackage(IEnumerable<int> moveIds)
+        {
+            var entries = new List<MoveTransferEntry>();
+            foreach (int id in moveIds)
+            {
+                if (id < 0 || id >= moveDataNARC.moves.Count)
+                    continue;
+
+                entries.Add(BuildMoveTransferEntry(id));
+            }
+
+            return new MoveTransferPackage
+            {
+                format = MoveTransferFormat,
+                version = MoveTransferVersion,
+                moves = entries
+            };
+        }
+
+        MoveTransferEntry BuildMoveTransferEntry(int moveId)
+        {
+            MoveDataEntry move = moveDataNARC.moves[moveId];
+            string moveName = GetMoveTextSafe(VersionConstants.MoveNameTextFileID, moveId, move.ToString());
+            string description = GetMoveTextSafe(VersionConstants.MoveDescriptionTextFileID, moveId, "").Replace("\\xfffe", "\n");
+
+            byte[] animBytes = Array.Empty<byte>();
+            if (moveId >= 0 && moveId < moveAnimNARC.animations.Count)
+                animBytes = moveAnimNARC.animations[moveId].bytes.ToArray();
+
+            return new MoveTransferEntry
+            {
+                moveId = moveId,
+                moveDataBytes = move.bytes.ToArray(),
+                name = moveName,
+                description = description,
+                animationBytes = animBytes
+            };
+        }
+
+        string GetMoveTextSafe(int textFileId, int id, string fallback)
+        {
+            if (textNARC.textFiles.Count <= textFileId || textNARC.textFiles[textFileId].text.Count <= id || id < 0)
+                return fallback;
+
+            return textNARC.textFiles[textFileId].text[id];
+        }
+
+        bool ValidateMoveTransferPackage(MoveTransferPackage package, out string error)
+        {
+            if (package == null)
+            {
+                error = "The file is empty or invalid.";
+                return false;
+            }
+
+            if (!string.Equals(package.format, MoveTransferFormat, StringComparison.Ordinal))
+            {
+                error = "Unsupported move transfer format.";
+                return false;
+            }
+
+            if (package.version != MoveTransferVersion)
+            {
+                error = "Unsupported move transfer version.";
+                return false;
+            }
+
+            if (package.moves == null || package.moves.Count == 0)
+            {
+                error = "No move entries were found in this file.";
+                return false;
+            }
+
+            error = "";
+            return true;
+        }
+
+        bool ApplyMoveTransferEntryToSlot(MoveTransferEntry entry, int targetId, out string error)
+        {
+            error = "";
+            if (entry == null)
+            {
+                error = "Entry is missing.";
+                return false;
+            }
+
+            if (targetId < 0 || targetId >= moveDataNARC.moves.Count)
+            {
+                error = "Target move slot is out of range.";
+                return false;
+            }
+
+            if (entry.moveDataBytes == null || entry.moveDataBytes.Length < 34)
+            {
+                error = "Move data bytes are missing or invalid.";
+                return false;
+            }
+
+            moveDataNARC.moves[targetId] = new MoveDataEntry(entry.moveDataBytes.ToArray()) { nameID = targetId };
+
+            if (entry.animationBytes != null && entry.animationBytes.Length > 0)
+            {
+                if (targetId >= moveAnimNARC.animations.Count)
+                {
+                    error = "Target move animation slot is out of range.";
+                    return false;
+                }
+
+                moveAnimNARC.animations[targetId] = new MoveAnimationEntry(entry.animationBytes.ToArray()) { nameID = targetId };
+            }
+
+            bool hasMoveNameText = textNARC.textFiles.Count > VersionConstants.MoveNameTextFileID;
+            bool hasMoveDescriptionText = textNARC.textFiles.Count > VersionConstants.MoveDescriptionTextFileID;
+
+            if (hasMoveNameText && targetId < textNARC.textFiles[VersionConstants.MoveNameTextFileID].text.Count && !string.IsNullOrEmpty(entry.name))
+            {
+                textNARC.textFiles[VersionConstants.MoveNameTextFileID].text[targetId] = entry.name;
+                UpdateMoveUsageTextForName(targetId, entry.name);
+            }
+
+            if (hasMoveDescriptionText && targetId < textNARC.textFiles[VersionConstants.MoveDescriptionTextFileID].text.Count && entry.description != null)
+                textNARC.textFiles[VersionConstants.MoveDescriptionTextFileID].text[targetId] = entry.description.Replace("\n", "\\xfffe");
+
+            return true;
+        }
+
+        void UpdateMoveUsageTextForName(int moveId, string moveName)
+        {
+            if (moveId < 0)
+                return;
+
+            if (textNARC.textFiles.Count <= VersionConstants.MoveUsageTextFileID)
+                return;
+
+            var usageText = textNARC.textFiles[VersionConstants.MoveUsageTextFileID].text;
+            int start = moveId * 3;
+            if (usageText.Count <= 5 || start + 2 >= usageText.Count)
+                return;
+
+            usageText[start] = usageText[3].Replace("Pound", moveName);
+            usageText[start + 1] = usageText[4].Replace("Pound", moveName);
+            usageText[start + 2] = usageText[5].Replace("Pound", moveName);
+        }
+
+        void CompressMoveTextData()
+        {
+            if (textNARC.textFiles.Count > VersionConstants.MoveNameTextFileID)
+                textNARC.textFiles[VersionConstants.MoveNameTextFileID].CompressData();
+            if (textNARC.textFiles.Count > VersionConstants.MoveUsageTextFileID)
+                textNARC.textFiles[VersionConstants.MoveUsageTextFileID].CompressData();
+            if (textNARC.textFiles.Count > VersionConstants.MoveDescriptionTextFileID)
+                textNARC.textFiles[VersionConstants.MoveDescriptionTextFileID].CompressData();
+        }
+
+        void SyncCurrentMoveToDataModel()
+        {
+            if (moveNameDropdown.SelectedIndex < 0) return;
+
+            ApplyMove(this, EventArgs.Empty);
+            if (moveAnimGroupBox.Enabled)
+                applyAnimDataButton_Click(this, EventArgs.Empty);
+        }
+
+        private void exportMoveButton_Click(object sender, EventArgs e)
+        {
+            int currentMoveId = moveNameDropdown.SelectedIndex;
+            if (currentMoveId < 0)
+            {
+                MessageBox.Show("Select a move first.");
+                return;
+            }
+
+            SyncCurrentMoveToDataModel();
+
+            SaveFileDialog saveDialog = new SaveFileDialog
+            {
+                Filter = "Move transfer file|*.Vmove",
+                FileName = "move_" + currentMoveId + ".Vmove"
+            };
+
+            if (saveDialog.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                MoveTransferPackage package = BuildMoveTransferPackage(new[] { currentMoveId });
+                string json = JsonSerializer.Serialize(package, transferJsonOptions);
+                File.WriteAllText(saveDialog.FileName, json, Encoding.UTF8);
+                statusText.Text = "Exported move " + currentMoveId + " - " + DateTime.Now.StatusText();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to export move file:\n" + ex.Message);
+            }
+        }
+
+        private void importMoveButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openDialog = new OpenFileDialog
+            {
+                Filter = "Move transfer file|*.Vmove"
+            };
+
+            if (openDialog.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                MoveTransferPackage package = JsonSerializer.Deserialize<MoveTransferPackage>(File.ReadAllText(openDialog.FileName, Encoding.UTF8));
+                if (!ValidateMoveTransferPackage(package, out string validationError))
+                {
+                    MessageBox.Show(validationError);
+                    return;
+                }
+
+                MoveTransferEntry entry = package.moves[0];
+
+                DialogResult modeResult = MessageBox.Show(
+                    "Import mode:\nYes = replace currently selected move slot\nNo = use move ID from file\nCancel = abort",
+                    "Choose move import mode",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question);
+
+                if (modeResult == DialogResult.Cancel)
+                    return;
+
+                int targetId;
+                if (modeResult == DialogResult.Yes)
+                {
+                    targetId = moveNameDropdown.SelectedIndex;
+                    if (targetId < 0)
+                    {
+                        MessageBox.Show("Select a move slot first.");
+                        return;
+                    }
+                }
+                else
+                {
+                    targetId = entry.moveId;
+                }
+
+                if (!ApplyMoveTransferEntryToSlot(entry, targetId, out string applyError))
+                {
+                    MessageBox.Show("Failed to import move:\n" + applyError);
+                    return;
+                }
+
+                CompressMoveTextData();
+                RefreshMoveLists();
+                moveNameDropdown.SelectedIndex = targetId;
+                statusText.Text = "Imported move into slot " + targetId + " - " + DateTime.Now.StatusText();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to import move file:\n" + ex.Message);
+            }
+        }
+
+        private void exportAllMovesButton_Click(object sender, EventArgs e)
+        {
+            if (moveDataNARC.moves == null || moveDataNARC.moves.Count == 0)
+            {
+                MessageBox.Show("No moves are available to export.");
+                return;
+            }
+
+            SyncCurrentMoveToDataModel();
+
+            SaveFileDialog saveDialog = new SaveFileDialog
+            {
+                Filter = "Moves transfer file|*.VmoveList",
+                FileName = "all_moves.VmoveList"
+            };
+
+            if (saveDialog.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                MoveTransferPackage package = BuildMoveTransferPackage(Enumerable.Range(0, moveDataNARC.moves.Count));
+                string json = JsonSerializer.Serialize(package, transferJsonOptions);
+                File.WriteAllText(saveDialog.FileName, json, Encoding.UTF8);
+                statusText.Text = "Exported all moves (" + package.moves.Count + ") - " + DateTime.Now.StatusText();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to export moves file:\n" + ex.Message);
+            }
+        }
+
+        private void importAllMovesButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openDialog = new OpenFileDialog
+            {
+                Filter = "Moves transfer file|*.VmoveList"
+            };
+
+            if (openDialog.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                MoveTransferPackage package = JsonSerializer.Deserialize<MoveTransferPackage>(File.ReadAllText(openDialog.FileName, Encoding.UTF8));
+                if (!ValidateMoveTransferPackage(package, out string validationError))
+                {
+                    MessageBox.Show(validationError);
+                    return;
+                }
+
+                int applyCount = Math.Min(moveDataNARC.moves.Count, package.moves.Count);
+                int applied = 0;
+                int failed = 0;
+                List<string> failures = new List<string>();
+
+                for (int i = 0; i < applyCount; i++)
+                {
+                    if (ApplyMoveTransferEntryToSlot(package.moves[i], i, out string error))
+                    {
+                        applied++;
+                    }
+                    else
+                    {
+                        failed++;
+                        failures.Add("Move " + i + ": " + error);
+                    }
+                }
+
+                int skipped = package.moves.Count - applyCount;
+
+                CompressMoveTextData();
+                RefreshMoveLists();
+
+                StringBuilder report = new StringBuilder();
+                report.AppendLine("Imported move list.");
+                report.AppendLine("Applied: " + applied);
+                report.AppendLine("Failed: " + failed);
+                report.AppendLine("Skipped (out of range): " + skipped);
+                if (failures.Count > 0)
+                {
+                    report.AppendLine();
+                    report.AppendLine("First failures:");
+                    foreach (string f in failures.Take(8))
+                        report.AppendLine("- " + f);
+                }
+
+                MessageBox.Show(report.ToString());
+                statusText.Text = "Imported move list - " + DateTime.Now.StatusText();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to import moves file:\n" + ex.Message);
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)

@@ -552,7 +552,7 @@ namespace NewEditor.Forms
                 editor.Owner = this;
                 editor.Show();
                 MainEditor.extraForms.Add(editor);
-                MainEditor.instance.ChangeTheme(null, null);
+                MainEditor.Instance.ChangeTheme(null, null);
                 editor.Setup(sid);
             }
         }

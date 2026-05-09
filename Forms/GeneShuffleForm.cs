@@ -7,19 +7,25 @@ namespace NewEditor.Forms
 {
     public partial class GeneShuffleForm : Form
     {
+        readonly ToolTip _geneShuffleTips = new ToolTip();
+
         public GeneShuffleForm()
         {
             InitializeComponent();
             if (MainEditor.RomType == RomType.BW1)
-            {
-                tutorGroup.Enabled = false;
-                tutorGroup.Text = "Move tutor compatibility (BW1 — not applicable)";
-            }
+                geneShuffleControl.SetTutorEnabled(false, "Move tutor compatibility (BW1 — not applicable)");
             if (MainEditor.RomTypeId == "pokemon w")
             {
                 includeFairyCheck.Enabled = false;
                 includeFairyCheck.Checked = false;
                 includeFairyCheck.Text = "Include Fairy-Types (not available on White 1)";
+                _geneShuffleTips.SetToolTip(includeFairyCheck,
+                    "Fairy Vpatch is not supported on Pokémon White 1.");
+            }
+            else
+            {
+                _geneShuffleTips.SetToolTip(includeFairyCheck,
+                    "Match this to the Starters / Statics / Trades tab’s “Include Fairy-type” when you use both tools on the same ROM, so type bounds and the battle chart (17 vs 18 types) stay aligned.");
             }
         }
 
@@ -53,10 +59,9 @@ namespace NewEditor.Forms
             int seed = (int)seedNumeric.Value;
             var rnd = seed != 0 ? new Random(seed) : new Random();
 
-            var typeMode = (GeneShuffleTypeMode)typeModeCombo.SelectedIndex;
             try
             {
-                TypeGeneRandomizer.Apply(typeMode, rnd, maxType, MainEditor.pokemonDataNarc.pokemon, MainEditor.evolutionsNarc.evolutions);
+                TypeGeneRandomizer.Apply(geneShuffleControl.TypeMode, rnd, maxType, MainEditor.pokemonDataNarc.pokemon, MainEditor.evolutionsNarc.evolutions);
             }
             catch (Exception ex)
             {
@@ -64,29 +69,23 @@ namespace NewEditor.Forms
                 return;
             }
 
-            var opt = new FvxRandomizerOptions
+            // Pokemon Traits (Base Stats / Abilities / Evolutions / EXP curves) — runs after types so
+            // "Same Typing" evolution filters see the freshly-rolled types.
+            var traitOpt = traitsControl.BuildOptions();
+            if (!FvxPokemonTraitsPipeline.TryRun(traitOpt, rnd, out var traitErr))
             {
-                MovesetsMod = (FvxMovesetsMod)movesetModCombo.SelectedIndex,
-                BlockBrokenMovesetMoves = blockBrokenMovesCheck.Checked,
-                StartWithGuaranteedMoves = guaranteedStartCheck.Checked,
-                GuaranteedMoveCount = (int)guaranteedCountNumeric.Value,
-                MovesetsForceGoodDamaging = forceGoodDamagingCheck.Checked,
-                MovesetsGoodDamagingPercent = (int)goodDamagingPercentNumeric.Value,
-                EvolutionMovesForAll = evoMoveAllCheck.Checked,
-                RandomizeEggMoves = randomizeEggCheck.Checked,
-                TmHmCompatMod = (FvxTmHmCompatMod)tmHmModCombo.SelectedIndex,
-                TmsFollowEvolutions = tmFollowEvoCheck.Checked,
-                TutorCompatMod = (FvxTutorCompatMod)tutorModCombo.SelectedIndex,
-                TutorFollowEvolutions = tutorFollowEvoCheck.Checked
-            };
-
-            if (!FvxLearnsetPipeline.TryRun(opt, rnd, out var fvxErr))
-            {
-                MessageBox.Show("Types were updated, but FVX learnset step failed: " + (fvxErr ?? ""));
+                MessageBox.Show("Types were updated, but Pokemon Traits step failed: " + (traitErr ?? ""));
                 return;
             }
 
-            MessageBox.Show("Gene Shuffle finished (types + FVX learnsets). Save the ROM to keep changes.");
+            var opt = geneShuffleControl.BuildOptions();
+            if (!FvxLearnsetPipeline.TryRun(opt, rnd, out var fvxErr))
+            {
+                MessageBox.Show("Types and traits were updated, but FVX learnset step failed: " + (fvxErr ?? ""));
+                return;
+            }
+
+            MessageBox.Show("Gene Shuffle finished (types + traits + FVX learnsets). Save the ROM to keep changes.");
         }
     }
 }

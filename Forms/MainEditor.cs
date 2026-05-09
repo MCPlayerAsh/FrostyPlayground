@@ -1,4 +1,5 @@
-﻿using NewEditor.Data;
+using NewEditor.Data;
+using NewEditor;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -109,7 +110,7 @@ namespace NewEditor.Forms
         public static RandomMovesEditor presetMovesEditor;
         public static LearnsetRandomizerFvxForm learnsetFvxEditor;
         public static GeneShuffleForm geneShuffleEditor;
-        public static FvxGen5RandomizerForm fvxGen5RandomizerForm;
+        public static FvxRandomizerForm fvxRandomizerEditor;
         public static PokemartEditor pokemartEditor;
         public static GrottoEditor grottoEditor;
         public static ExpCurveEditor xpCurveEditor;
@@ -126,14 +127,31 @@ namespace NewEditor.Forms
 
         public static DarkModeCS darkMode = null;
 
-        public static MainEditor instance;
+        /// <summary>Main window; set in the constructor. Prefer this over duplicate globals.</summary>
+        public static MainEditor Instance { get; private set; }
 
         public MainEditor()
         {
-            instance = this;
+            Instance = this;
             InitializeComponent();
 
             TryAutoLoad();
+        }
+
+        void buttonCustomModesMoreToggle_Click(object sender, EventArgs e)
+        {
+            bool expand = !panelCustomModesMore.Visible;
+            panelCustomModesMore.Visible = expand;
+            buttonCustomModesMoreToggle.Text = expand
+                ? "▼ Hide StS Format and Spoink"
+                : "▶ StS Format and Slay the Spoink";
+            const int collapsedH = 280;
+            const int expandedH = 360;
+            const int toggleYCollapsed = 232;
+            const int toggleYExpanded = 316;
+            groupBox1.Height = expand ? expandedH : collapsedH;
+            buttonCustomModesMoreToggle.Location = new Point(buttonCustomModesMoreToggle.Location.X,
+                expand ? toggleYExpanded : toggleYCollapsed);
         }
 
         public void ChangeTheme(object sender, EventArgs e)
@@ -152,7 +170,7 @@ namespace NewEditor.Forms
         public static List<Form> GetAllForms()
         {
             List<Form> list = new List<Form>();
-            list.Add(instance);
+            list.Add(Instance);
             if (textViewer != null && !textViewer.IsDisposed) list.Add(textViewer);
             if (pokemonEditor != null && !pokemonEditor.IsDisposed) list.Add(pokemonEditor);
             if (moveEditor != null && !moveEditor.IsDisposed) list.Add(moveEditor);
@@ -168,7 +186,7 @@ namespace NewEditor.Forms
             if (presetMovesEditor != null && !presetMovesEditor.IsDisposed) list.Add(presetMovesEditor);
             if (learnsetFvxEditor != null && !learnsetFvxEditor.IsDisposed) list.Add(learnsetFvxEditor);
             if (geneShuffleEditor != null && !geneShuffleEditor.IsDisposed) list.Add(geneShuffleEditor);
-            if (fvxGen5RandomizerForm != null && !fvxGen5RandomizerForm.IsDisposed) list.Add(fvxGen5RandomizerForm);
+            if (fvxRandomizerEditor != null && !fvxRandomizerEditor.IsDisposed) list.Add(fvxRandomizerEditor);
             if (pokePatchEditor != null && !pokePatchEditor.IsDisposed) list.Add(pokePatchEditor);
             if (fileExplorer != null && !fileExplorer.IsDisposed) list.Add(fileExplorer);
             if (pokedexTools != null && !pokedexTools.IsDisposed) list.Add(pokedexTools);
@@ -333,22 +351,22 @@ namespace NewEditor.Forms
             {
                 taskProgressBar.Value = 0;
                 loadedRomPath = prompt.FileName;
-                FileStream fileStream = null;
                 try
                 {
-                    fileStream = File.OpenWrite(loadedRomPath);
+                    using (FileStream fileStream = File.OpenWrite(loadedRomPath))
+                    {
+                        fileStream.SetLength(0);
+                        byte[] data = fileSystem.BuildRom();
+                        fileStream.Write(data, 0, data.Length);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Unable to save rom");
+                    MessageBox.Show("Unable to save rom: " + ex.Message);
 
                     statusText.Text = "Failed to save rom - " + DateTime.Now.StatusText();
                     return;
                 }
-                fileStream.SetLength(0);
-                byte[] data = fileSystem.BuildRom();
-                fileStream.Write(data, 0, data.Length);
-                fileStream.Close();
                 taskProgressBar.Value = taskProgressBar.Maximum;
                 statusText.Text = "Saved rom to " + prompt.FileName + " - " + DateTime.Now.StatusText();
                 MessageBox.Show("Rom saved to " + prompt.FileName);
@@ -413,6 +431,7 @@ namespace NewEditor.Forms
             if (presetMovesEditor != null && !presetMovesEditor.IsDisposed) presetMovesEditor.Close();
             if (learnsetFvxEditor != null && !learnsetFvxEditor.IsDisposed) learnsetFvxEditor.Close();
             if (geneShuffleEditor != null && !geneShuffleEditor.IsDisposed) geneShuffleEditor.Close();
+            if (fvxRandomizerEditor != null && !fvxRandomizerEditor.IsDisposed) fvxRandomizerEditor.Close();
             if (pokePatchEditor != null && !pokePatchEditor.IsDisposed) pokePatchEditor.Close();
             if (fileExplorer != null && !fileExplorer.IsDisposed) fileExplorer.Close();
             if (pokedexTools != null && !pokedexTools.IsDisposed) pokedexTools.Close();
@@ -460,20 +479,18 @@ namespace NewEditor.Forms
                     }
                     else
                     {
-                        FileStream fileStream = File.OpenRead(loadedRomPath);
-                        fileSystem = NDSFileSystem.FromRom(fileStream, true);
-
-                        fileStream.Close();
+                        using (FileStream fileStream = File.OpenRead(loadedRomPath))
+                            fileSystem = NDSFileSystem.FromRom(fileStream, true);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     if (autoLoaded)
                     {
                         DisableAutoLoad(null, null);
                         MessageBox.Show("Auto load has been disabled due to an error with the rom file.\nPlease restart the application.");
                     }
-                    throw ex;
+                    throw;
                 }
             });
             if (fail)
@@ -500,6 +517,26 @@ namespace NewEditor.Forms
 
             loadingNARCS = false;
             autoLoaded = false;
+
+            try
+            {
+                if (fvxRandomizerEditor != null && !fvxRandomizerEditor.IsDisposed)
+                    fvxRandomizerEditor.RefreshAfterRomLoaded();
+            }
+            catch
+            {
+                /* UI refresh best-effort */
+            }
+        }
+
+        /// <summary>Reload the current main window ROM file into <see cref="fileSystem"/> and refresh static NARC refs.</summary>
+        public static void ReloadRomFileSystemFromLoadedPath()
+        {
+            string path = Instance?.loadedRomPath;
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                throw new InvalidOperationException("No ROM file is loaded.");
+            using (var fs = File.OpenRead(path))
+                fileSystem = NDSFileSystem.FromRom(fs, true);
         }
 
         public static void SetNARCVars(NDSFileSystem fileSystem)
@@ -853,23 +890,22 @@ namespace NewEditor.Forms
             geneShuffleEditor.BringToFront();
         }
 
-        public void OpenFvxGen5Randomizer(object sender, EventArgs e)
+        public void OpenFvxRandomizer(object sender, EventArgs e)
         {
-            if (pokemonDataNarc == null || moveDataNarc == null || learnsetNarc == null || loadingNARCS)
+            if (pokemonDataNarc == null || textNarc == null || loadingNARCS)
             {
                 MessageBox.Show("Necessary data files have not been loaded");
                 return;
             }
             if (RomType != RomType.BW1 && RomType != RomType.BW2)
             {
-                MessageBox.Show("FVX-style randomizer supports Black/White and Black 2/White 2 only.");
+                MessageBox.Show("FVX randomizer is for Gen 5 (BW / BW2) only.");
                 return;
             }
-            if (fvxGen5RandomizerForm == null || fvxGen5RandomizerForm.IsDisposed)
-                fvxGen5RandomizerForm = new FvxGen5RandomizerForm();
+            if (fvxRandomizerEditor == null || fvxRandomizerEditor.IsDisposed) fvxRandomizerEditor = new FvxRandomizerForm();
             ChangeTheme(null, null);
-            fvxGen5RandomizerForm.Show();
-            fvxGen5RandomizerForm.BringToFront();
+            fvxRandomizerEditor.Show();
+            fvxRandomizerEditor.BringToFront();
         }
 
         private void testGameModeButton_Click(object sender, EventArgs e)
@@ -1399,123 +1435,6 @@ namespace NewEditor.Forms
             xpCurveEditor.BringToFront();
         }
 
-        private void ReadCommandHeaders()
-        {
-            //string[] lines = File.ReadAllLines("ScriptCommands.h");
-            //string[] lines2 = File.ReadAllLines("ScriptCommands2.h");
-            //string[] lines3 = File.ReadAllLines("ScriptCommands3.h");
-            //for (int i = 0; i < lines.Length; i++)
-            //{
-            //    string[] parts = lines[i].Split(new string[] { "\t" }, StringSplitOptions.RemoveEmptyEntries);
-            //    string[] parts2 = lines2[i].Split(new string[] { "\t" }, StringSplitOptions.RemoveEmptyEntries);
-            //    int num = int.Parse(parts[0], System.Globalization.NumberStyles.HexNumber);
-            //    string name = parts[1];
-            //    int[] par = new int[parts.Length - 2];
-            //    for (int j = 0; j < par.Length; j++)
-            //    {
-            //        if (parts[j + 2] == "i") par[j] = 4;
-            //        else if (parts[j + 2] == "s") par[j] = 2;
-            //        else if (parts[j + 2] == "b") par[j] = 1;
-            //        else throw new Exception();
-            //    }
-            //    Debug.WriteLine("//" + lines3[i]);
-            //    string output = "void " + name + "(";
-            //    for (int j = 0; j < par.Length; j++)
-            //    {
-            //        output += par[j] == 1 ? "char " : par[j] == 2 ? "short " : "int ";
-            //        if (j + 2 < parts2.Length) output += parts2[j + 2];
-            //        else output += "p" + j.ToString();
-            //        if (j < par.Length - 1) output += ", ";
-            //    }
-            //    output += ");";
-            //    Debug.WriteLine(output);
-            //}
-
-            string[] lines = File.ReadAllLines("ScriptCommands.h");
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string[] parts = lines[i].Split(new string[] { "\t" }, StringSplitOptions.RemoveEmptyEntries);
-                int num = int.Parse(parts[0], System.Globalization.NumberStyles.HexNumber);
-                string name = parts[1];
-                int[] par = new int[parts.Length - 2];
-                for (int j = 0; j < par.Length; j++)
-                {
-                    if (parts[j + 2] == "i") par[j] = 4;
-                    else if (parts[j + 2] == "s") par[j] = 2;
-                    else if (parts[j + 2] == "b") par[j] = 1;
-                    else throw new Exception();
-                }
-                string output = "{0x" + parts[0].ToUpper() + ", new CommandType(\"" + parts[1] + "\", " + par.Length;
-                for (int j = 0; j < par.Length; j++)
-                {
-                    output += ", " + par[j];
-                }
-                output += ")},";
-                Debug.WriteLine(output);
-            }
-        }
-
-        private void FindChanges()
-        {
-            OpenFileDialog prompt = new OpenFileDialog();
-            prompt.Filter = "Nds Roms|*.nds";
-            prompt.Title = "Select the base version of the rom";
-            if (prompt.ShowDialog() == DialogResult.OK)
-            {
-                FileStream fileStream = File.OpenRead(prompt.FileName);
-                NDSFileSystem other = NDSFileSystem.FromRom(fileStream);
-                fileStream.Close();
-
-                Debug.WriteLine("Moves:");
-                for (int i = 0; i < moveDataNarc.moves.Count; i++)
-                {
-                    if (i >= other.moveDataNarc.moves.Count || !other.moveDataNarc.moves[i].bytes.SequenceEqual(moveDataNarc.moves[i].bytes) ||
-                        textNarc.textFiles[VersionConstants.MoveDescriptionTextFileID].text[i] != other.textNarc.textFiles[VersionConstants.MoveDescriptionTextFileID].text[i])
-                    {
-                        Debug.WriteLine(moveDataNarc.moves[i].ToString());
-                    }
-                }
-                Debug.WriteLine("Trainers:");
-                for (int i = 0; i < trainerNarc.trainers.Count; i++)
-                {
-                    if (i >= other.trainerNarc.trainers.Count || !other.trainerNarc.trainers[i].bytes.SequenceEqual(trainerNarc.trainers[i].bytes) ||
-                        !other.trainerNarc.trainers[i].pokemon.bytes.SequenceEqual(trainerNarc.trainers[i].pokemon.bytes))
-                    {
-                        Debug.WriteLine(trainerNarc.trainers[i].ToString());
-                    }
-                }
-
-                Debug.WriteLine("Pokemon:");
-                for (int i = 0; i < pokemonDataNarc.pokemon.Count; i++)
-                {
-                    if (i < other.pokemonDataNarc.pokemon.Count) other.pokemonDataNarc.pokemon[i].bytes[9] = pokemonDataNarc.pokemon[i].bytes[9];
-                    if (i >= other.pokemonDataNarc.pokemon.Count || !other.pokemonDataNarc.pokemon[i].bytes.SequenceEqual(pokemonDataNarc.pokemon[i].bytes) ||
-                        !other.pokemonDataNarc.pokemon[i].evolutions.bytes.SequenceEqual(pokemonDataNarc.pokemon[i].evolutions.bytes) ||
-                        !other.pokemonDataNarc.pokemon[i].levelUpMoves.bytes.SequenceEqual(pokemonDataNarc.pokemon[i].levelUpMoves.bytes))
-                    {
-                        Debug.WriteLine(pokemonDataNarc.pokemon[i].Name);
-                    }
-                }
-
-                Debug.WriteLine("Egg moves:");
-                for (int i = 0; i < eggMoveNarc.entries.Count; i++)
-                {
-                    if (i >= other.eggMoveNarc.entries.Count || !other.eggMoveNarc.entries[i].bytes.SequenceEqual(eggMoveNarc.entries[i].bytes))
-                    {
-                        Debug.WriteLine(pokemonDataNarc.pokemon[i].Name);
-                    }
-                }
-
-                Debug.WriteLine("Encounters:");
-                for (int i = 0; i < encounterNarc.encounterPools.Count; i++)
-                {
-                    if (i >= other.encounterNarc.encounterPools.Count || !other.encounterNarc.encounterPools[i].bytes.SequenceEqual(encounterNarc.encounterPools[i].bytes))
-                    {
-                        Debug.WriteLine(encounterNarc.encounterPools[i].ToString());
-                    }
-                }
-            }
-        }
     }
 
     public enum RomType

@@ -1,4 +1,4 @@
-﻿
+
 namespace NewEditor.Forms
 {
     partial class MoveEditor
@@ -88,6 +88,10 @@ namespace NewEditor.Forms
             this.setDescriptionButton = new System.Windows.Forms.Button();
             this.addMovesButton = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.exportMoveButton = new System.Windows.Forms.Button();
+            this.importMoveButton = new System.Windows.Forms.Button();
+            this.exportAllMovesButton = new System.Windows.Forms.Button();
+            this.importAllMovesButton = new System.Windows.Forms.Button();
             this.flagsListBox = new System.Windows.Forms.CheckedListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.setMoveDescriptionTextBox = new System.Windows.Forms.RichTextBox();
@@ -778,7 +782,7 @@ namespace NewEditor.Forms
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(440, 14);
+            this.button1.Location = new System.Drawing.Point(920, 14);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(100, 30);
             this.button1.TabIndex = 103;
@@ -786,6 +790,46 @@ namespace NewEditor.Forms
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Visible = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // exportMoveButton
+            // 
+            this.exportMoveButton.Location = new System.Drawing.Point(440, 16);
+            this.exportMoveButton.Name = "exportMoveButton";
+            this.exportMoveButton.Size = new System.Drawing.Size(110, 30);
+            this.exportMoveButton.TabIndex = 108;
+            this.exportMoveButton.Text = "Export Move";
+            this.exportMoveButton.UseVisualStyleBackColor = true;
+            this.exportMoveButton.Click += new System.EventHandler(this.exportMoveButton_Click);
+            // 
+            // importMoveButton
+            // 
+            this.importMoveButton.Location = new System.Drawing.Point(560, 16);
+            this.importMoveButton.Name = "importMoveButton";
+            this.importMoveButton.Size = new System.Drawing.Size(110, 30);
+            this.importMoveButton.TabIndex = 109;
+            this.importMoveButton.Text = "Import Move";
+            this.importMoveButton.UseVisualStyleBackColor = true;
+            this.importMoveButton.Click += new System.EventHandler(this.importMoveButton_Click);
+            // 
+            // exportAllMovesButton
+            // 
+            this.exportAllMovesButton.Location = new System.Drawing.Point(680, 16);
+            this.exportAllMovesButton.Name = "exportAllMovesButton";
+            this.exportAllMovesButton.Size = new System.Drawing.Size(110, 30);
+            this.exportAllMovesButton.TabIndex = 110;
+            this.exportAllMovesButton.Text = "Export All";
+            this.exportAllMovesButton.UseVisualStyleBackColor = true;
+            this.exportAllMovesButton.Click += new System.EventHandler(this.exportAllMovesButton_Click);
+            // 
+            // importAllMovesButton
+            // 
+            this.importAllMovesButton.Location = new System.Drawing.Point(800, 16);
+            this.importAllMovesButton.Name = "importAllMovesButton";
+            this.importAllMovesButton.Size = new System.Drawing.Size(110, 30);
+            this.importAllMovesButton.TabIndex = 111;
+            this.importAllMovesButton.Text = "Import All";
+            this.importAllMovesButton.UseVisualStyleBackColor = true;
+            this.importAllMovesButton.Click += new System.EventHandler(this.importAllMovesButton_Click);
             // 
             // flagsListBox
             // 
@@ -910,6 +954,10 @@ namespace NewEditor.Forms
             this.Controls.Add(this.moveAnimGroupBox);
             this.Controls.Add(this.setMoveDescriptionTextBox);
             this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.importAllMovesButton);
+            this.Controls.Add(this.exportAllMovesButton);
+            this.Controls.Add(this.importMoveButton);
+            this.Controls.Add(this.exportMoveButton);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.addMovesButton);
             this.Controls.Add(this.setDescriptionButton);
@@ -1026,5 +1074,9 @@ namespace NewEditor.Forms
         private System.Windows.Forms.Label statusText;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.ComboBox statusModeDropdown;
+        private System.Windows.Forms.Button exportMoveButton;
+        private System.Windows.Forms.Button importMoveButton;
+        private System.Windows.Forms.Button exportAllMovesButton;
+        private System.Windows.Forms.Button importAllMovesButton;
     }
 }

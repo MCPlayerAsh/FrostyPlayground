@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NewEditor.Data.NARCTypes;
 
@@ -47,6 +48,13 @@ namespace NewEditor.Data.Randomization.FvxGen5
         }
 
         public bool IsBasic(int speciesIndex, bool[] incoming) => !incoming[speciesIndex];
+
+        public IReadOnlyList<int> Outgoing(int speciesIndex)
+        {
+            if (speciesIndex >= 0 && speciesIndex < edgesFrom.Count)
+                return edgesFrom[speciesIndex];
+            return Array.Empty<int>();
+        }
 
         /// <summary>BFS from species with no incoming evolutions (basics), then along edgesFrom.</summary>
         public void ApplyCopyUp(System.Action<int> basicAction, System.Action<int, int, bool> evolvedAction)

@@ -224,7 +224,7 @@ namespace NewEditor.Forms
 
         private void ViewPokemonButton(object sender, EventArgs e)
         {
-            Program.main.OpenPokemonEditor(sender, e);
+            MainEditor.Instance.OpenPokemonEditor(sender, e);
             if (MainEditor.pokemonEditor != null)
             {
                 if (MainEditor.pokemonDataNarc.pokemon.Exists(p => p.nameID == encounterPokemonNameDropDown.SelectedIndex)) MainEditor.pokemonEditor.pokemonNameDropdown.SelectedItem = MainEditor.pokemonDataNarc.pokemon.First(p => p.nameID == encounterPokemonNameDropDown.SelectedIndex);

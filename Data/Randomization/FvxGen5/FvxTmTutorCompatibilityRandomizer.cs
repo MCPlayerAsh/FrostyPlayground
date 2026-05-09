@@ -13,7 +13,6 @@ namespace NewEditor.Data.Randomization.FvxGen5
     {
         public static void RandomizeTmHm(FvxRandomizerOptions opt, Random rnd, IReadOnlyList<short> tmHmMoveIds)
         {
-            if (opt.TmHmCompatMod == FvxTmHmCompatMod.Unchanged) return;
             if (tmHmMoveIds == null || tmHmMoveIds.Count < FvxGen5Constants.TmCount + FvxGen5Constants.HmCount) return;
 
             var moves = MainEditor.moveDataNarc.moves;
@@ -60,15 +59,31 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 }
             }
 
-            if (opt.TmsFollowEvolutions && MainEditor.evolutionsNarc?.evolutions != null)
+            bool randomizedMode = opt.TmHmCompatMod == FvxTmHmCompatMod.CompletelyRandom || opt.TmHmCompatMod == FvxTmHmCompatMod.RandomPreferType;
+            if (randomizedMode && opt.TmsFollowEvolutions && MainEditor.evolutionsNarc?.evolutions != null)
             {
                 var g = FvxGen5EvolutionGraph.FromEvolutions(MainEditor.evolutionsNarc.evolutions);
                 g.ApplyCopyUp(RandomizeBasicIndex, CopyUp);
             }
-            else
+            else if (randomizedMode)
             {
                 foreach (var pk in pokemon) RandomizeOnePokemon(pk);
             }
+            else if (opt.TmHmCompatMod == FvxTmHmCompatMod.FullCompatibility)
+            {
+                foreach (var pk in pokemon)
+                    for (int i = 0; i < tmHmMoveIds.Count && i < pk.TMs.Length; i++)
+                        pk.TMs[i] = true;
+            }
+
+            if (opt.TmLevelupMoveSanity)
+            {
+                EnsureTmLevelupSanity(tmHmMoveIds);
+                if (opt.TmsFollowEvolutions)
+                    EnsureTmEvolutionSanity(tmHmMoveIds);
+            }
+            if (opt.FullHmCompatibility)
+                EnsureFullHmCompatibility(tmHmMoveIds);
 
             foreach (var pk in pokemon) pk.ApplyData();
         }
@@ -84,7 +99,6 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public static void RandomizeTutors(FvxRandomizerOptions opt, Random rnd, IReadOnlyList<short> tutorMoveIds)
         {
             if (MainEditor.RomType != RomType.BW2) return;
-            if (opt.TutorCompatMod == FvxTutorCompatMod.Unchanged) return;
             if (tutorMoveIds == null || tutorMoveIds.Count == 0) return;
 
             var moves = MainEditor.moveDataNarc.moves;
@@ -133,14 +147,116 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 }
             }
 
-            if (opt.TutorFollowEvolutions && MainEditor.evolutionsNarc?.evolutions != null)
+            bool randomizedMode = opt.TutorCompatMod == FvxTutorCompatMod.CompletelyRandom || opt.TutorCompatMod == FvxTutorCompatMod.RandomPreferType;
+            if (randomizedMode && opt.TutorFollowEvolutions && MainEditor.evolutionsNarc?.evolutions != null)
             {
                 var g = FvxGen5EvolutionGraph.FromEvolutions(MainEditor.evolutionsNarc.evolutions);
                 g.ApplyCopyUp(RandomizeBasicIndex, CopyUp);
             }
-            else foreach (var pk in pokemon) RandomizeOnePokemon(pk);
+            else if (randomizedMode)
+            {
+                foreach (var pk in pokemon) RandomizeOnePokemon(pk);
+            }
+            else if (opt.TutorCompatMod == FvxTutorCompatMod.FullCompatibility)
+            {
+                foreach (var pk in pokemon)
+                    for (int ti = 0; ti < tutorMoveIds.Count; ti++)
+                        SetTutorFlag(pk, ti, true);
+            }
+
+            if (opt.TutorLevelupMoveSanity)
+            {
+                EnsureTutorLevelupSanity(tutorMoveIds);
+                if (opt.TutorFollowEvolutions)
+                    EnsureTutorEvolutionSanity(tutorMoveIds);
+            }
 
             foreach (var pk in pokemon) pk.ApplyData();
+        }
+
+        static void EnsureTmLevelupSanity(IReadOnlyList<short> tmHmMoveIds)
+        {
+            if (MainEditor.learnsetNarc?.learnsets == null) return;
+            var tmLookup = new Dictionary<int, int>();
+            for (int i = 0; i < tmHmMoveIds.Count; i++)
+                if (!tmLookup.ContainsKey(tmHmMoveIds[i])) tmLookup[tmHmMoveIds[i]] = i;
+
+            var pokemon = MainEditor.pokemonDataNarc.pokemon;
+            int n = Math.Min(pokemon.Count, MainEditor.learnsetNarc.learnsets.Count);
+            for (int pi = 0; pi < n; pi++)
+            {
+                var ls = MainEditor.learnsetNarc.learnsets[pi];
+                if (ls?.moves == null) continue;
+                var pk = pokemon[pi];
+                foreach (var slot in ls.moves)
+                {
+                    int mid = slot.moveID;
+                    if (tmLookup.TryGetValue(mid, out var tmIndex) && tmIndex < pk.TMs.Length)
+                        pk.TMs[tmIndex] = true;
+                }
+            }
+        }
+
+        static void EnsureTutorLevelupSanity(IReadOnlyList<short> tutorMoveIds)
+        {
+            if (MainEditor.learnsetNarc?.learnsets == null) return;
+            var tutorLookup = new Dictionary<int, int>();
+            for (int i = 0; i < tutorMoveIds.Count; i++)
+                if (!tutorLookup.ContainsKey(tutorMoveIds[i])) tutorLookup[tutorMoveIds[i]] = i;
+
+            var pokemon = MainEditor.pokemonDataNarc.pokemon;
+            int n = Math.Min(pokemon.Count, MainEditor.learnsetNarc.learnsets.Count);
+            for (int pi = 0; pi < n; pi++)
+            {
+                var ls = MainEditor.learnsetNarc.learnsets[pi];
+                if (ls?.moves == null) continue;
+                var pk = pokemon[pi];
+                foreach (var slot in ls.moves)
+                {
+                    int mid = slot.moveID;
+                    if (tutorLookup.TryGetValue(mid, out var tutorIndex))
+                        SetTutorFlag(pk, tutorIndex, true);
+                }
+            }
+        }
+
+        static void EnsureTmEvolutionSanity(IReadOnlyList<short> tmHmMoveIds)
+        {
+            if (MainEditor.evolutionsNarc?.evolutions == null) return;
+            var pokemon = MainEditor.pokemonDataNarc.pokemon;
+            var g = FvxGen5EvolutionGraph.FromEvolutions(MainEditor.evolutionsNarc.evolutions);
+            g.ApplyCopyUp(_ => { }, (evFrom, evTo, _) =>
+            {
+                var from = pokemon[evFrom];
+                var to = pokemon[evTo];
+                for (int i = 0; i < tmHmMoveIds.Count && i < from.TMs.Length && i < to.TMs.Length; i++)
+                    if (from.TMs[i]) to.TMs[i] = true;
+            });
+        }
+
+        static void EnsureTutorEvolutionSanity(IReadOnlyList<short> tutorMoveIds)
+        {
+            if (MainEditor.evolutionsNarc?.evolutions == null) return;
+            var pokemon = MainEditor.pokemonDataNarc.pokemon;
+            var g = FvxGen5EvolutionGraph.FromEvolutions(MainEditor.evolutionsNarc.evolutions);
+            g.ApplyCopyUp(_ => { }, (evFrom, evTo, _) =>
+            {
+                var from = pokemon[evFrom];
+                var to = pokemon[evTo];
+                for (int ti = 0; ti < tutorMoveIds.Count; ti++)
+                    if (GetTutorFlag(from, ti)) SetTutorFlag(to, ti, true);
+            });
+        }
+
+        static void EnsureFullHmCompatibility(IReadOnlyList<short> tmHmMoveIds)
+        {
+            int hmStart = FvxGen5Constants.TmCount;
+            int hmEnd = Math.Min(tmHmMoveIds.Count, hmStart + FvxGen5Constants.HmCount);
+            foreach (var pk in MainEditor.pokemonDataNarc.pokemon)
+            {
+                for (int i = hmStart; i < hmEnd && i < pk.TMs.Length; i++)
+                    pk.TMs[i] = true;
+            }
         }
 
         static bool GetTutorFlag(PokemonEntry p, int ti)
