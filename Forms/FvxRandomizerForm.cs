@@ -57,8 +57,6 @@ namespace NewEditor.Forms
         CheckBox miscDisableLowHpMusic;
         CheckBox miscForgettableHms;
         CheckBox miscBalanceStaticLevels;
-        CheckBox miscRandomizeCatchingTutorial;
-        CheckBox miscRandomizePcPotion;
 
         public FvxRandomizerForm()
         {
@@ -89,6 +87,7 @@ namespace NewEditor.Forms
             InitializeWildTabUi();
             UpdateWildControlsEnabled();
             InitializeMiscTweaksTabUi();
+            InitializeSettingsTabUi();
             UpdateMiscTweaksEnabled();
             HookItemsTabEvents();
             UpdateItemsControlsEnabled();
@@ -104,6 +103,7 @@ namespace NewEditor.Forms
             UpdateIncludeFairyUi();
             UpdateFoeMiddleColumnEnabled();
             UpdateMiscTweaksEnabled();
+            RefreshSettingsRomLabels();
         }
 
         void FvxRandomizerForm_Shown(object sender, EventArgs e)
@@ -113,6 +113,7 @@ namespace NewEditor.Forms
             UpdateBwGateUi();
             UpdateIncludeFairyUi();
             UpdateMiscTweaksEnabled();
+            RefreshSettingsRomLabels();
         }
 
         /// <summary>White 1 cannot use Fairy Vpatch — mirror Gene Shuffle.</summary>
@@ -206,71 +207,41 @@ namespace NewEditor.Forms
                 return;
             }
 
+            if (_setRaceMode.Checked && _batchEnabled.Checked)
+            {
+                MessageBox.Show("Race mode cannot be used together with batch randomization.");
+                return;
+            }
+            if (_setRaceMode.Checked && !wildRandomizeCheck.Checked && !BuildFoePokemonOptionsFromUi().AnyRandomizationActive)
+            {
+                MessageBox.Show("Race mode requires at least one of: randomize wild Pokémon, or foe Pokémon / trainer randomization options.");
+                return;
+            }
+            if (_setLimitPokemon.Checked && _limitSpeciesAllowlist.Count == 0)
+            {
+                MessageBox.Show("Limit Pokémon is on but no species are selected. Use Configure…");
+                return;
+            }
+
+            if (_batchEnabled.Checked)
+            {
+                RunBatchRandomization();
+                return;
+            }
+
             int seed = (int)seedNumeric.Value;
             var rnd = seed != 0 ? new Random(seed) : new Random();
-            var opt = BuildOptionsFromUi();
-
-            // Order matters:
-            //   1) Fairy + Types (Gene Shuffle tab) so any "Same Typing" / type-aware downstream filters see new types.
-            //   2) Pokemon Traits — base stats / abilities / evolutions / EXP curves.
-            //   3) FVX learnsets / TMs / tutors (Gene Shuffle tab) — uses fresh types.
-            //   4) Starters / Statics / Trades — sees fresh BSTs/types; must run before foe trainers when BW1 trio gyms follow scripts.
-            //   5) Wild Pokémon — updates encounter/catch/item baselines before trainer randomization.
-            //   6) Foe Pokémon (trainers) — uses fresh learnsets/types for pools; reads script starters for Striaton themes.
-            if (!RunGeneShuffleStep(opt.IncludeFairyTypes, rnd, out var geneErr))
+            var global = BuildGlobalOptionsFromSettings();
+            if (!TryRunRandomizationPipeline(rnd, global, out int? race, out var err))
             {
-                MessageBox.Show("Gene Shuffle step failed: " + (geneErr ?? ""));
+                MessageBox.Show(string.IsNullOrEmpty(err) ? "Apply failed." : err);
                 return;
             }
 
-            var traitOpt = traitsControl.BuildOptions();
-            if (!FvxPokemonTraitsPipeline.TryRun(traitOpt, rnd, out var traitErr))
-            {
-                MessageBox.Show("Pokemon Traits step failed: " + (traitErr ?? ""));
-                return;
-            }
-
-            if (!RunGeneShuffleLearnsetStep(rnd, out var learnErr))
-            {
-                MessageBox.Show("Gene Shuffle learnset step failed: " + (learnErr ?? ""));
-                return;
-            }
-
-            var miscOpt = BuildMiscTweaksOptionsFromUi();
-            if (!FvxMiscTweaksPipeline.TryRun(miscOpt, rnd, out var miscErr))
-            {
-                MessageBox.Show("Misc Tweaks step failed: " + (miscErr ?? ""));
-                return;
-            }
-
-            if (!FvxStartersStaticsTradesPipeline.TryRun(opt, rnd, out var startersErr))
-            {
-                MessageBox.Show(string.IsNullOrEmpty(startersErr) ? "Starters / statics / trades step did not run." : startersErr);
-                return;
-            }
-
-            var wildOpt = BuildWildPokemonOptionsFromUi();
-            if (!FvxWildPokemonPipeline.TryRun(wildOpt, rnd, out var wildErr))
-            {
-                MessageBox.Show("Wild Pokémon step failed: " + (wildErr ?? ""));
-                return;
-            }
-
-            var itemsOpt = BuildItemsOptionsFromUi();
-            if (!FvxItemsPipeline.TryRun(itemsOpt, rnd, out var itemsErr))
-            {
-                MessageBox.Show("Items step failed: " + (itemsErr ?? ""));
-                return;
-            }
-
-            var foeOpt = BuildFoePokemonOptionsFromUi();
-            if (!FvxFoePokemonPipeline.TryRun(foeOpt, rnd, out var foeErr))
-            {
-                MessageBox.Show("Foe Pokémon step failed: " + (foeErr ?? ""));
-                return;
-            }
-
-            MessageBox.Show("FVX-style settings applied. Save the ROM to keep changes.");
+            string msg = "FVX-style settings applied. Save the ROM to keep changes.";
+            if (global.RaceMode && race.HasValue)
+                msg += "\n\nRace mode check value: " + race.Value;
+            MessageBox.Show(msg);
         }
 
         /// <summary>
@@ -470,9 +441,7 @@ namespace NewEditor.Forms
                 RunWithoutRunningShoes = miscRunWithoutRunningShoes.Checked,
                 DisableLowHpMusic = miscDisableLowHpMusic.Checked,
                 ForgettableHms = miscForgettableHms.Checked,
-                BalanceStaticLevels = miscBalanceStaticLevels.Checked,
-                RandomizeCatchingTutorial = miscRandomizeCatchingTutorial.Checked,
-                RandomizePcPotion = miscRandomizePcPotion.Checked
+                BalanceStaticLevels = miscBalanceStaticLevels.Checked
             };
         }
 
@@ -696,8 +665,6 @@ namespace NewEditor.Forms
             miscDisableLowHpMusic = NewMiscCheck("Disable Low HP Music");
             miscForgettableHms = NewMiscCheck("Forgettable HMs");
             miscBalanceStaticLevels = NewMiscCheck("Balance Static Pokemon Levels");
-            miscRandomizeCatchingTutorial = NewMiscCheck("Randomize Catching Tutorial (not used on Gen5)");
-            miscRandomizePcPotion = NewMiscCheck("Randomize PC Potion (not used on Gen5)");
 
             col1.Controls.Add(miscFastestText);
             col1.Controls.Add(miscNationalDexAtStart);
@@ -710,8 +677,6 @@ namespace NewEditor.Forms
             col3.Controls.Add(miscRunWithoutRunningShoes);
             col3.Controls.Add(miscDisableLowHpMusic);
             col3.Controls.Add(miscForgettableHms);
-            col3.Controls.Add(miscRandomizeCatchingTutorial);
-            col3.Controls.Add(miscRandomizePcPotion);
 
             root.Controls.Add(col1, 0, 0);
             root.Controls.Add(col2, 1, 0);
@@ -724,8 +689,6 @@ namespace NewEditor.Forms
             _fvxTips.SetToolTip(miscForceChallengeMode, "BW2 only.");
             _fvxTips.SetToolTip(miscNoFreeLuckyEgg, "Replaces Juniper's free Lucky Egg gift(s).");
             _fvxTips.SetToolTip(miscBalanceStaticLevels, "BW1 only: adjusts fossil static level.");
-            _fvxTips.SetToolTip(miscRandomizeCatchingTutorial, "Shown for parity with UPR-FVX; this tweak is not applied for Gen5 (checkbox stays off).");
-            _fvxTips.SetToolTip(miscRandomizePcPotion, "Shown for parity with UPR-FVX; this tweak is not applied for Gen5 (checkbox stays off).");
         }
 
         static CheckBox NewMiscCheck(string text)
@@ -748,11 +711,6 @@ namespace NewEditor.Forms
             bool canNationalDex = FvxGen5MiscTweaksRunner.CanApplyNationalDexPatch();
             miscNationalDexAtStart.Enabled = canNationalDex;
             if (!canNationalDex) miscNationalDexAtStart.Checked = false;
-
-            miscRandomizeCatchingTutorial.Enabled = false;
-            miscRandomizePcPotion.Enabled = false;
-            miscRandomizeCatchingTutorial.Checked = false;
-            miscRandomizePcPotion.Checked = false;
         }
 
         void WildRandomizeCheckedChanged(object sender, EventArgs e) => UpdateWildControlsEnabled();

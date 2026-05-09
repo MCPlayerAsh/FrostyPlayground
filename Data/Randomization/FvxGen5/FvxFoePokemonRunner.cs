@@ -237,10 +237,23 @@ namespace NewEditor.Data.Randomization.FvxGen5
         {
             var names = MainEditor.textNarc?.textFiles?[VersionConstants.TrainerNameTextFileID]?.text;
             if (names == null || names.Count < 2) return;
+            FvxCustomNamesSet custom = null;
+            try { custom = FvxCustomNamesSet.ReadOrCreate(FvxCustomNamesSet.DefaultFilePath()); } catch { custom = null; }
+
             foreach (var tr in trainers)
             {
                 if (tr.nameID < 0 || tr.nameID >= names.Count) continue;
-                names[tr.nameID] = names[rnd.Next(names.Count)];
+                if (custom != null && (custom.TrainerNames.Count > 0 || custom.DoublesTrainerNames.Count > 0))
+                {
+                    bool dbl = tr.battleType == 1
+                        && custom.DoublesTrainerNames.Count > 0;
+                    var pickFrom = dbl ? custom.DoublesTrainerNames : custom.TrainerNames;
+                    if (pickFrom.Count == 0) pickFrom = custom.TrainerNames.Count > 0 ? custom.TrainerNames : custom.DoublesTrainerNames;
+                    if (pickFrom.Count > 0)
+                        names[tr.nameID] = pickFrom[rnd.Next(pickFrom.Count)];
+                }
+                else
+                    names[tr.nameID] = names[rnd.Next(names.Count)];
             }
             try { MainEditor.textNarc.textFiles[VersionConstants.TrainerNameTextFileID].CompressData(); } catch { }
         }
@@ -249,6 +262,20 @@ namespace NewEditor.Data.Randomization.FvxGen5
         {
             var classes = MainEditor.textNarc?.textFiles?[VersionConstants.TrainerClassTextFileID]?.text;
             if (classes == null || classes.Count < 1) return;
+            FvxCustomNamesSet custom = null;
+            try { custom = FvxCustomNamesSet.ReadOrCreate(FvxCustomNamesSet.DefaultFilePath()); } catch { custom = null; }
+
+            if (custom != null && (custom.TrainerClasses.Count > 0 || custom.DoublesTrainerClasses.Count > 0))
+            {
+                for (int i = 0; i < classes.Count; i++)
+                {
+                    var pickFrom = custom.TrainerClasses.Count > 0 ? custom.TrainerClasses : custom.DoublesTrainerClasses;
+                    if (pickFrom.Count > 0)
+                        classes[i] = pickFrom[rnd.Next(pickFrom.Count)];
+                }
+                try { MainEditor.textNarc.textFiles[VersionConstants.TrainerClassTextFileID].CompressData(); } catch { }
+            }
+
             byte max = (byte)(classes.Count - 1);
             foreach (var tr in trainers)
                 tr.trainerClass = (byte)rnd.Next(0, max + 1);
@@ -580,6 +607,13 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
                 if (filtered.Count == 0) filtered = new List<int>(pool);
 
+                if (opt.Global != null && opt.Global.BanPrematureEvos && evolutions != null)
+                {
+                    var pl = filtered.Where(s =>
+                        FvxPrematureEvoLegality.IsLegalEvolutionAtLevel(s, tp.level, 1.0, evolutions)).ToList();
+                    if (pl.Count > 0) filtered = pl;
+                }
+
                 List<int> pickPool = filtered;
                 if (isLeague && i < leagueSlots && opt.UseLocalPokemon && localSpecies != null)
                 {
@@ -656,6 +690,9 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 {
                     byte nf = pokemon[picked].numberOfForms;
                     if (nf <= 1)
+                        tp.form = 0;
+                    else if (opt.Global != null && opt.Global.BanIrregularAltFormes
+                             && FvxGen5IrregularFormes.IsBannedWhenOptionOn(picked, bw2))
                         tp.form = 0;
                     else if (rnd.Next(3) == 0)
                     {
@@ -747,7 +784,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 }
                 pool.Add(i);
             }
-            return pool;
+            return FvxGlobalSpeciesPoolFilter.FilterPool(pool, opt.Global, bw2,
+                MainEditor.evolutionsNarc?.evolutions, null);
         }
 
         /// <summary>UPR-FVX <c>getSharedType</c> style: type common to all members' primary/secondary typing.</summary>

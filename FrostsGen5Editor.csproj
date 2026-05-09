@@ -183,6 +183,16 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonOptions.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonPipeline.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerGlobalOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5IrregularFormes.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxPrematureEvoLegality.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxEvolutionAllowlistPruner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGlobalSpeciesPoolFilter.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxCustomNamesDefaults.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxCustomNamesSet.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxIntroMonRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerRaceChecksum.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerConfigFile.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxItemsOptions.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxItemsPipeline.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxMiscTweaksOptions.cs" />
@@ -332,6 +342,15 @@
     </Compile>
     <Compile Include="Forms\FvxRandomizerForm.Designer.cs">
       <DependentUpon>FvxRandomizerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FvxRandomizerForm.Settings.cs">
+      <DependentUpon>FvxRandomizerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FvxCustomNamesEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FvxLimitPokemonForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\ScriptEditor.cs">
       <SubType>Form</SubType>

@@ -1,4 +1,5 @@
 using NewEditor.Data;
+using NewEditor;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -133,6 +134,22 @@ namespace NewEditor.Forms
             InitializeComponent();
 
             TryAutoLoad();
+        }
+
+        void buttonCustomModesMoreToggle_Click(object sender, EventArgs e)
+        {
+            bool expand = !panelCustomModesMore.Visible;
+            panelCustomModesMore.Visible = expand;
+            buttonCustomModesMoreToggle.Text = expand
+                ? "▼ Hide StS Format and Spoink"
+                : "▶ StS Format and Slay the Spoink";
+            const int collapsedH = 280;
+            const int expandedH = 360;
+            const int toggleYCollapsed = 232;
+            const int toggleYExpanded = 316;
+            groupBox1.Height = expand ? expandedH : collapsedH;
+            buttonCustomModesMoreToggle.Location = new Point(buttonCustomModesMoreToggle.Location.X,
+                expand ? toggleYExpanded : toggleYCollapsed);
         }
 
         public void ChangeTheme(object sender, EventArgs e)
@@ -509,6 +526,16 @@ namespace NewEditor.Forms
             {
                 /* UI refresh best-effort */
             }
+        }
+
+        /// <summary>Reload the current main window ROM file into <see cref="fileSystem"/> and refresh static NARC refs.</summary>
+        public static void ReloadRomFileSystemFromLoadedPath()
+        {
+            string path = Program.main?.loadedRomPath;
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                throw new InvalidOperationException("No ROM file is loaded.");
+            using (var fs = File.OpenRead(path))
+                fileSystem = NDSFileSystem.FromRom(fs, true);
         }
 
         public static void SetNARCVars(NDSFileSystem fileSystem)

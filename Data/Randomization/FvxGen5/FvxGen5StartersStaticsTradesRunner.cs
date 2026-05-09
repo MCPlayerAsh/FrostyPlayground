@@ -46,7 +46,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 }
             }
 
-            if (!TryApplyStarters(opt, rnd, bw2, sn, pd, graph, incoming, chart, maxTypeInclusive,
+            if (!TryApplyStarters(opt, rnd, bw2, sn, pd, evo, graph, incoming, chart, maxTypeInclusive,
                     out var startersApplied, out var starterErr))
             {
                 error = starterErr;
@@ -115,22 +115,36 @@ namespace NewEditor.Data.Randomization.FvxGen5
             return IsMono(pk);
         }
 
-        static bool StarterPoolMember(int i, PokemonEntry pk, FvxStartersStaticsTradesOptions opt, int maxType)
+        static bool StarterPoolMember(int i, PokemonEntry pk, FvxStartersStaticsTradesOptions opt, int maxType,
+            IReadOnlyList<EvolutionDataEntry> evo, bool bw2)
         {
             if (i <= 0 || i > FvxGen5Constants.NationalDexCount) return false;
             if (!TypesInChart(pk, maxType)) return false;
             if (!BstOk(pk, opt)) return false;
             if (!LegendaryOk(i, opt)) return false;
             if (!DualTypeOk(pk, opt)) return false;
+            var g = opt.Global;
+            if (g != null)
+            {
+                if (g.LimitPokemon && g.AllowedSpecies != null && g.AllowedSpecies.Count > 0
+                    && !g.AllowedSpecies.Contains(i))
+                    return false;
+                if (g.BanIrregularAltFormes && FvxGen5IrregularFormes.IsBannedWhenOptionOn(i, bw2))
+                    return false;
+                if (g.BanPrematureEvos && evo != null
+                    && !FvxPrematureEvoLegality.IsLegalEvolutionAtLevel(i, 5, 1.0, evo))
+                    return false;
+            }
             return true;
         }
 
-        static List<int> BuildStarterIndices(IReadOnlyList<PokemonEntry> pokemon, FvxStartersStaticsTradesOptions opt, int maxType)
+        static List<int> BuildStarterIndices(IReadOnlyList<PokemonEntry> pokemon, FvxStartersStaticsTradesOptions opt,
+            int maxType, IReadOnlyList<EvolutionDataEntry> evo, bool bw2)
         {
             var list = new List<int>();
             for (int i = 1; i < pokemon.Count; i++)
             {
-                if (StarterPoolMember(i, pokemon[i], opt, maxType))
+                if (StarterPoolMember(i, pokemon[i], opt, maxType, evo, bw2))
                     list.Add(i);
             }
             return list;
@@ -142,6 +156,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
             bool bw2,
             ScriptNARC narc,
             IReadOnlyList<PokemonEntry> pokemon,
+            IReadOnlyList<EvolutionDataEntry> evo,
             FvxGen5EvolutionGraph graph,
             bool[] incoming,
             byte[] chart,
@@ -163,7 +178,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 case FvxStarterSelectionMode.Unchanged:
                     return true;
                 case FvxStarterSelectionMode.Custom:
-                    if (!ValidateCustomStarters(opt, pokemon, maxType, out error))
+                    if (!ValidateCustomStarters(opt, pokemon, evo, bw2, maxType, out error))
                         return false;
                     WriteStarterGroup(narc, groups[0], opt.CustomStarterSpeciesIndex0);
                     WriteStarterGroup(narc, groups[1], opt.CustomStarterSpeciesIndex1);
@@ -177,7 +192,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     return true;
             }
 
-            var pool = BuildStarterIndices(pokemon, opt, maxType);
+            var pool = BuildStarterIndices(pokemon, opt, maxType, evo, bw2);
             if (pool.Count < 3)
             {
                 error = "Not enough Pokémon match starter filters (BST / legendaries / types).";
@@ -329,7 +344,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
             return TryPickThreeRandom(rnd, monoOfType, picks, out error);
         }
 
-        static bool ValidateCustomStarters(FvxStartersStaticsTradesOptions opt, IReadOnlyList<PokemonEntry> pokemon, int maxType, out string error)
+        static bool ValidateCustomStarters(FvxStartersStaticsTradesOptions opt, IReadOnlyList<PokemonEntry> pokemon,
+            IReadOnlyList<EvolutionDataEntry> evo, bool bw2, int maxType, out string error)
         {
             error = null;
             int[] idx = { opt.CustomStarterSpeciesIndex0, opt.CustomStarterSpeciesIndex1, opt.CustomStarterSpeciesIndex2 };
@@ -348,7 +364,9 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 }
             }
 
-            bool enforceFilters = opt.DontUseLegendaries || opt.NoDualTypes || opt.LimitBstMin || opt.LimitBstMax;
+            bool enforceFilters = opt.DontUseLegendaries || opt.NoDualTypes || opt.LimitBstMin || opt.LimitBstMax
+                || (opt.Global != null && (opt.Global.LimitPokemon || opt.Global.BanIrregularAltFormes
+                    || opt.Global.BanPrematureEvos));
             for (int k = 0; k < idx.Length; k++)
             {
                 int i = idx[k];
@@ -358,9 +376,9 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     error = $"Custom starter #{k + 1} uses a type outside the current chart (enable Include Fairy or apply the type patch).";
                     return false;
                 }
-                if (enforceFilters && !StarterPoolMember(i, pk, opt, maxType))
+                if (enforceFilters && !StarterPoolMember(i, pk, opt, maxType, evo, bw2))
                 {
-                    error = $"Custom starter #{k + 1} does not satisfy enabled filters (BST limits / no legendaries / no dual types).";
+                    error = $"Custom starter #{k + 1} does not satisfy enabled filters (BST / legendaries / types / Settings limits).";
                     return false;
                 }
             }
@@ -504,6 +522,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 if (opt.DontUseLegendaries && LegendaryOrMythicalNationalDex.Contains(i)) continue;
                 staticPool.Add(i);
             }
+            staticPool = FvxGlobalSpeciesPoolFilter.FilterPool(staticPool, opt.Global, bw2,
+                MainEditor.evolutionsNarc?.evolutions, 45);
 
             var legendaryPool = staticPool.Where(i => LegendaryOrMythicalNationalDex.Contains(i)).ToList();
             var nonLegendPool = staticPool.Where(i => !LegendaryOrMythicalNationalDex.Contains(i)).ToList();
@@ -602,6 +622,15 @@ namespace NewEditor.Data.Randomization.FvxGen5
             }
 
             FvxGen5TradeScriptPatcher.ApplyToNarc(opt, rnd, pool, narc, MainEditor.BlackVersion);
+            if (opt.TradesRandomizeNicknames)
+            {
+                int nameFile = VersionConstants.PokemonNameTextFileID;
+                var tf = MainEditor.textNarc?.textFiles;
+                if (tf != null && nameFile >= 0 && nameFile < tf.Count)
+                {
+                    try { tf[nameFile].CompressData(); } catch { /* best-effort */ }
+                }
+            }
             FvxGen5TradeStoryText.Apply(opt, bw2, MainEditor.BlackVersion);
             return true;
         }

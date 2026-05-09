@@ -87,6 +87,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
         /// </summary>
         public bool Bw1TrioGymsMatchStarterTriangle { get; set; }
 
+        public FvxRandomizerGlobalOptions Global { get; set; }
+
         public bool AnyRandomizationActive =>
             TrainerPokemonMode != FvxFoeTrainerPokemonMode.Unchanged
             || RandomizeTrainerNames

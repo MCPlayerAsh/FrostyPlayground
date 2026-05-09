@@ -38,6 +38,8 @@ namespace NewEditor.Forms
             this.openPokemonEditorButton = new System.Windows.Forms.Button();
             this.openOverworldEditorButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.buttonCustomModesMoreToggle = new System.Windows.Forms.Button();
+            this.panelCustomModesMore = new System.Windows.Forms.Panel();
             this.littleCupButton = new System.Windows.Forms.Button();
             this.rotationBattleButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
@@ -89,6 +91,7 @@ namespace NewEditor.Forms
             this.themeDropdown = new System.Windows.Forms.ComboBox();
             this.statusText = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
+            this.panelCustomModesMore.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.narcToReplaceNumberBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.replaceSoundID)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.replaceIconID)).BeginInit();
@@ -176,23 +179,44 @@ namespace NewEditor.Forms
             // groupBox1
             // 
             this.groupBox1.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.groupBox1.Controls.Add(this.panelCustomModesMore);
             this.groupBox1.Controls.Add(this.littleCupButton);
             this.groupBox1.Controls.Add(this.rotationBattleButton);
-            this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.stsFormatDropdown);
             this.groupBox1.Controls.Add(this.tripleBattleButton);
-            this.groupBox1.Controls.Add(this.rogueModeButton);
             this.groupBox1.Controls.Add(this.openPresetMoveEditorButton);
             this.groupBox1.Controls.Add(this.openLearnsetFvxRandomizerButton);
             this.groupBox1.Controls.Add(this.openGeneShuffleButton);
             this.groupBox1.Controls.Add(this.openFvxRandomizerButton);
             this.groupBox1.Controls.Add(this.openTypeSwapEditorButton);
+            this.groupBox1.Controls.Add(this.buttonCustomModesMoreToggle);
             this.groupBox1.Location = new System.Drawing.Point(508, 249);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(264, 340);
+            this.groupBox1.Size = new System.Drawing.Size(264, 280);
             this.groupBox1.TabIndex = 10;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Custom Game Modes";
+            // 
+            // buttonCustomModesMoreToggle
+            // 
+            this.buttonCustomModesMoreToggle.Location = new System.Drawing.Point(12, 232);
+            this.buttonCustomModesMoreToggle.Name = "buttonCustomModesMoreToggle";
+            this.buttonCustomModesMoreToggle.Size = new System.Drawing.Size(240, 28);
+            this.buttonCustomModesMoreToggle.TabIndex = 24;
+            this.buttonCustomModesMoreToggle.Text = "▶ StS Format and Slay the Spoink";
+            this.buttonCustomModesMoreToggle.UseVisualStyleBackColor = true;
+            this.buttonCustomModesMoreToggle.Click += new System.EventHandler(this.buttonCustomModesMoreToggle_Click);
+            // 
+            // panelCustomModesMore
+            // 
+            this.panelCustomModesMore.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.panelCustomModesMore.Controls.Add(this.label3);
+            this.panelCustomModesMore.Controls.Add(this.stsFormatDropdown);
+            this.panelCustomModesMore.Controls.Add(this.rogueModeButton);
+            this.panelCustomModesMore.Location = new System.Drawing.Point(10, 228);
+            this.panelCustomModesMore.Name = "panelCustomModesMore";
+            this.panelCustomModesMore.Size = new System.Drawing.Size(244, 86);
+            this.panelCustomModesMore.TabIndex = 25;
+            this.panelCustomModesMore.Visible = false;
             // 
             // littleCupButton
             // 
@@ -217,7 +241,7 @@ namespace NewEditor.Forms
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(50, 201);
+            this.label3.Location = new System.Drawing.Point(36, 12);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(78, 16);
             this.label3.TabIndex = 17;
@@ -231,7 +255,7 @@ namespace NewEditor.Forms
             "Double",
             "Triple",
             "Rotation"});
-            this.stsFormatDropdown.Location = new System.Drawing.Point(130, 196);
+            this.stsFormatDropdown.Location = new System.Drawing.Point(118, 8);
             this.stsFormatDropdown.Name = "stsFormatDropdown";
             this.stsFormatDropdown.Size = new System.Drawing.Size(120, 24);
             this.stsFormatDropdown.TabIndex = 16;
@@ -248,7 +272,7 @@ namespace NewEditor.Forms
             // 
             // rogueModeButton
             // 
-            this.rogueModeButton.Location = new System.Drawing.Point(130, 275);
+            this.rogueModeButton.Location = new System.Drawing.Point(62, 44);
             this.rogueModeButton.Name = "rogueModeButton";
             this.rogueModeButton.Size = new System.Drawing.Size(120, 32);
             this.rogueModeButton.TabIndex = 14;
@@ -288,7 +312,7 @@ namespace NewEditor.Forms
             // 
             // openFvxRandomizerButton
             // 
-            this.openFvxRandomizerButton.Location = new System.Drawing.Point(15, 230);
+            this.openFvxRandomizerButton.Location = new System.Drawing.Point(15, 188);
             this.openFvxRandomizerButton.Name = "openFvxRandomizerButton";
             this.openFvxRandomizerButton.Size = new System.Drawing.Size(235, 32);
             this.openFvxRandomizerButton.TabIndex = 23;
@@ -760,6 +784,8 @@ namespace NewEditor.Forms
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "MainEditor";
             this.Text = "Frost\'s Ultimate Gen 5 Editor 5.0.1";
+            this.panelCustomModesMore.ResumeLayout(false);
+            this.panelCustomModesMore.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.narcToReplaceNumberBox)).EndInit();
@@ -786,6 +812,8 @@ namespace NewEditor.Forms
         private System.Windows.Forms.Button openPokemonEditorButton;
         private System.Windows.Forms.Button openOverworldEditorButton;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button buttonCustomModesMoreToggle;
+        private System.Windows.Forms.Panel panelCustomModesMore;
         private System.Windows.Forms.Button openTypeSwapEditorButton;
         private System.Windows.Forms.Button openMoveEditorButton;
         private System.Windows.Forms.Button openScriptEditorButton;

@@ -73,8 +73,6 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 opt.FastestText = false;
             if (!CanApplyNationalDexPatch())
                 opt.NationalDexAtStart = false;
-            opt.RandomizeCatchingTutorial = false;
-            opt.RandomizePcPotion = false;
         }
 
         static List<MiscAction> BuildActions(FvxMiscTweaksOptions opt)

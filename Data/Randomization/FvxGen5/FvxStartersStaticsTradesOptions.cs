@@ -77,5 +77,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
         /// <summary>Reserved for future starter sprite/cry NARC sync with chosen species (currently unused).</summary>
         public bool StarterUpdateGraphicsAndCries { get; set; }
+
+        public FvxRandomizerGlobalOptions Global { get; set; }
     }
 }

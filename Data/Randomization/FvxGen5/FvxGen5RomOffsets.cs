@@ -19,5 +19,11 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
         public const int LowHpMusicOverlayBw1 = 94;
         public const int LowHpMusicOverlayBw2 = 168;
+
+        /// <summary>UPR <c>gen5_offsets.ini</c> IntroGraphicOvlNumber / IntroCryOvlNumber.</summary>
+        public const int IntroGraphicOverlayBw1 = 204;
+        public const int IntroCryOverlayBw1 = 88;
+        public const int IntroGraphicOverlayBw2 = 294;
+        public const int IntroCryOverlayBw2 = 162;
     }
 }

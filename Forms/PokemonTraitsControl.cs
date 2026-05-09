@@ -80,6 +80,64 @@ namespace NewEditor.Forms
             return opt;
         }
 
+        public void ApplyFromOptions(FvxPokemonTraitsOptions o)
+        {
+            if (o == null) return;
+            switch (o.BaseStatsMod)
+            {
+                case FvxBaseStatsMod.Shuffle: baseStatsShuffle.Checked = true; break;
+                case FvxBaseStatsMod.Random: baseStatsRandom.Checked = true; break;
+                default: baseStatsUnchanged.Checked = true; break;
+            }
+            baseStatsFollowEvolutions.Checked = o.BaseStatsFollowEvolutions;
+            baseStatsRandomizeAdded.Checked = o.BaseStatsRandomizeAddedOnEvolution;
+
+            standardizeExpCheck.Checked = o.StandardizeExpScope != FvxStandardizeExpScope.None;
+            standardizeExpScopeAllPokemon.Checked = o.StandardizeExpScope == FvxStandardizeExpScope.AllPokemon;
+            standardizeExpScopeStrongLegendarySlow.Checked = o.StandardizeExpScope == FvxStandardizeExpScope.StrongLegendariesSlow;
+            standardizeExpScopeLegendarySlow.Checked = o.StandardizeExpScope == FvxStandardizeExpScope.LegendariesSlow;
+            for (int i = 0; i < standardizeExpTargetCombo.Items.Count; i++)
+            {
+                if (((CurveOption)standardizeExpTargetCombo.Items[i]).Value == o.StandardizeExpTarget)
+                {
+                    standardizeExpTargetCombo.SelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (o.AbilitiesMod == FvxAbilitiesMod.Random) abilitiesRandom.Checked = true;
+            else abilitiesUnchanged.Checked = true;
+            abilitiesAllowWonderGuard.Checked = o.AbilitiesAllowWonderGuard;
+            abilitiesCombineDuplicates.Checked = o.AbilitiesCombineDuplicates;
+            abilitiesEnsureTwo.Checked = o.AbilitiesEnsureTwo;
+            abilitiesFollowEvolutions.Checked = o.AbilitiesFollowEvolutions;
+            abilitiesBanTrapping.Checked = o.AbilitiesBanTrapping;
+            abilitiesBanNegative.Checked = o.AbilitiesBanNegative;
+            abilitiesBanBad.Checked = o.AbilitiesBanBad;
+
+            switch (o.EvolutionsMod)
+            {
+                case FvxEvolutionsMod.RandomEveryLevel: evolutionsRandomEveryLevel.Checked = true; break;
+                case FvxEvolutionsMod.Random: evolutionsRandom.Checked = true; break;
+                default: evolutionsUnchanged.Checked = true; break;
+            }
+            evolutionsSimilarStrength.Checked = o.EvolutionsSimilarStrength;
+            evolutionsSameTyping.Checked = o.EvolutionsSameTyping;
+            evolutionsLimitToThreeStages.Checked = o.EvolutionsLimitToThreeStages;
+            evolutionsNoConvergence.Checked = o.EvolutionsNoConvergence;
+            evolutionsForceChange.Checked = o.EvolutionsForceChange;
+            evolutionsForceGrowth.Checked = o.EvolutionsForceGrowth;
+            evolutionsChangeImpossible.Checked = o.EvolutionsChangeImpossible;
+            evolutionsMakeEasier.Checked = o.EvolutionsMakeEasier;
+            int cap = o.EvolutionsMakeEasierLevelCap;
+            if (cap < evolutionsMakeEasierSlider.Minimum) cap = evolutionsMakeEasierSlider.Minimum;
+            if (cap > evolutionsMakeEasierSlider.Maximum) cap = evolutionsMakeEasierSlider.Maximum;
+            evolutionsMakeEasierSlider.Value = cap;
+            evolutionsUseEstimatedLevels.Checked = o.EvolutionsUseEstimatedLevels;
+            evolutionsRemoveTimeBased.Checked = o.EvolutionsRemoveTimeBased;
+            UpdateEnableState();
+        }
+
         void BaseStatsModeChanged(object sender, EventArgs e) => UpdateEnableState();
         void BaseStatsFollowChanged(object sender, EventArgs e) => UpdateEnableState();
         void StandardizeExpChanged(object sender, EventArgs e) => UpdateEnableState();

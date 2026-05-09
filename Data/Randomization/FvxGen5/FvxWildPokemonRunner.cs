@@ -218,7 +218,9 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     continue;
                 pool.Add(i);
             }
-            return pool;
+            bool bw2 = MainEditor.RomType == RomType.BW2;
+            return FvxGlobalSpeciesPoolFilter.FilterPool(pool, opt.Global, bw2,
+                MainEditor.evolutionsNarc?.evolutions, null);
         }
 
         static List<int> FilterSpeciesPool(List<int> basePool, List<PokemonEntry> pokemon, FvxWildPokemonOptions opt,
@@ -248,6 +250,19 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     zoneThemeByKey[zoneKey] = theme;
                 }
                 q = q.Where(i => TypeMatches(pokemon[i], theme));
+            }
+
+            bool banPrem = opt.Global != null && opt.Global.BanPrematureEvos
+                && opt.EvolutionRestrictionMode != FvxWildEvolutionRestrictionMode.SameEvolutionStage
+                && !opt.KeepEvolutionRelations;
+            if (banPrem)
+            {
+                var evo = MainEditor.evolutionsNarc?.evolutions;
+                if (evo != null)
+                {
+                    int lv = slot.minLevel;
+                    q = q.Where(i => FvxPrematureEvoLegality.IsLegalEvolutionAtLevel(i, lv, 1.0, evo));
+                }
             }
 
             return q.ToList();

@@ -9,6 +9,7 @@ namespace NewEditor.Forms
         System.Windows.Forms.NumericUpDown seedNumeric;
         System.Windows.Forms.Button applyButton;
         System.Windows.Forms.TabControl mainTabs;
+        System.Windows.Forms.TabPage tabPageSettings;
         System.Windows.Forms.TabPage tabPagePokemonTraits;
         System.Windows.Forms.TabPage tabPageGeneShuffle;
         GeneShuffleControl geneShuffleControl;
@@ -320,9 +321,11 @@ namespace NewEditor.Forms
             itemsPickupBanBad = new System.Windows.Forms.CheckBox();
             tabPageMiscTweaks = new System.Windows.Forms.TabPage();
             labelPlaceholderMisc = new System.Windows.Forms.Label();
+            tabPageSettings = new System.Windows.Forms.TabPage();
             panelTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(seedNumeric)).BeginInit();
             mainTabs.SuspendLayout();
+            tabPageSettings.SuspendLayout();
             tabPagePokemonTraits.SuspendLayout();
             tabPageGeneShuffle.SuspendLayout();
             tabPageStartersStaticsTrades.SuspendLayout();
@@ -414,12 +417,13 @@ namespace NewEditor.Forms
             tabPageGeneShuffle.Controls.Add(geneShuffleControl);
 
             tabPageStartersStaticsTrades.Text = "Starters, Statics && Trades";
+            tabPageStartersStaticsTrades.Padding = new System.Windows.Forms.Padding(4);
             tableSst.Dock = System.Windows.Forms.DockStyle.Fill;
             tableSst.ColumnCount = 3;
             tableSst.RowCount = 1;
-            tableSst.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            tableSst.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            tableSst.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
+            tableSst.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34F));
+            tableSst.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
+            tableSst.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             tableSst.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 
             groupBoxStarters.Text = "Starter Pokemon";
@@ -428,9 +432,9 @@ namespace NewEditor.Forms
             startersInner.Dock = System.Windows.Forms.DockStyle.Fill;
             startersInner.ColumnCount = 3;
             startersInner.RowCount = 1;
-            startersInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            startersInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            startersInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
+            startersInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34F));
+            startersInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
+            startersInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             startersInner.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 
             starterColSelection.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -460,8 +464,9 @@ namespace NewEditor.Forms
             starterModeRandomFull.Text = "Random (completely)";
             starterModeRandomFull.CheckedChanged += StarterModeChanged;
             starterModeRandomBasic3.AutoSize = true;
+            starterModeRandomBasic3.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             starterModeRandomBasic3.Location = new System.Drawing.Point(4, 154);
-            starterModeRandomBasic3.Text = "Random (basic Pokemon with 2 evolutions)";
+            starterModeRandomBasic3.Text = "Random (basic, two-stage line)";
             starterModeRandomBasic3.CheckedChanged += StarterModeChanged;
             starterModeRandomAnyBasic.AutoSize = true;
             starterModeRandomAnyBasic.Location = new System.Drawing.Point(4, 176);
@@ -535,13 +540,13 @@ namespace NewEditor.Forms
             numericBstMax.Maximum = 780;
             numericBstMax.Value = 320;
             checkIncludeFairy.AutoSize = true;
+            checkIncludeFairy.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             checkIncludeFairy.Location = new System.Drawing.Point(4, 78);
-            checkIncludeFairy.MaximumSize = new System.Drawing.Size(220, 0);
-            checkIncludeFairy.Text = "Include Fairy-type (applies Fairy Vpatch when needed)";
+            checkIncludeFairy.Text = "Include Fairy-type (Fairy Vpatch when needed)";
             checkIncludeFairy.TabIndex = 31;
             checkStarterGraphics.AutoSize = true;
-            checkStarterGraphics.Location = new System.Drawing.Point(4, 106);
-            checkStarterGraphics.MaximumSize = new System.Drawing.Size(220, 0);
+            checkStarterGraphics.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            checkStarterGraphics.Location = new System.Drawing.Point(4, 132);
             checkStarterGraphics.Text = "Update starter graphics && cries (experimental)";
             checkStarterGraphics.TabIndex = 32;
             starterColExtra.Controls.Add(checkNoLegendaries);
@@ -563,9 +568,9 @@ namespace NewEditor.Forms
             staticsInner.Dock = System.Windows.Forms.DockStyle.Fill;
             staticsInner.ColumnCount = 3;
             staticsInner.RowCount = 1;
-            staticsInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            staticsInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            staticsInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
+            staticsInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36F));
+            staticsInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            staticsInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34F));
             staticsInner.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 
             staticColMode.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -574,8 +579,9 @@ namespace NewEditor.Forms
             statModeUnchanged.Text = "Unchanged";
             statModeUnchanged.Checked = true;
             statModeSwap.AutoSize = true;
+            statModeSwap.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             statModeSwap.Location = new System.Drawing.Point(4, 26);
-            statModeSwap.Text = "Swap Legendaries && Swap Standards";
+            statModeSwap.Text = "Swap legendaries && swap standards (paired)";
             statModeRandomFull.AutoSize = true;
             statModeRandomFull.Location = new System.Drawing.Point(4, 48);
             statModeRandomFull.Text = "Random (completely)";
@@ -600,18 +606,19 @@ namespace NewEditor.Forms
             staticColLevel.Dock = System.Windows.Forms.DockStyle.Fill;
             checkStaticsLevelPct.AutoSize = true;
             checkStaticsLevelPct.Location = new System.Drawing.Point(4, 4);
-            checkStaticsLevelPct.Text = "Percentage Level Modifier";
+            checkStaticsLevelPct.Text = "Percentage level modifier";
             checkStaticsLevelPct.CheckedChanged += StaticsLevelCheckChanged;
+            trackStaticsLevelPct.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             trackStaticsLevelPct.Location = new System.Drawing.Point(4, 28);
-            trackStaticsLevelPct.Size = new System.Drawing.Size(200, 45);
+            trackStaticsLevelPct.Size = new System.Drawing.Size(260, 45);
             trackStaticsLevelPct.Minimum = -100;
             trackStaticsLevelPct.Maximum = 150;
             trackStaticsLevelPct.TickFrequency = 25;
             trackStaticsLevelPct.Value = 0;
             trackStaticsLevelPct.Enabled = false;
             trackStaticsLevelPct.ValueChanged += TrackStaticsLevelValueChanged;
-            numericStaticsLevelPct.Location = new System.Drawing.Point(210, 30);
-            numericStaticsLevelPct.Size = new System.Drawing.Size(50, 22);
+            numericStaticsLevelPct.Location = new System.Drawing.Point(4, 78);
+            numericStaticsLevelPct.Size = new System.Drawing.Size(56, 22);
             numericStaticsLevelPct.Minimum = -100;
             numericStaticsLevelPct.Maximum = 150;
             numericStaticsLevelPct.Value = 0;
@@ -632,8 +639,8 @@ namespace NewEditor.Forms
             tradesInner.Dock = System.Windows.Forms.DockStyle.Fill;
             tradesInner.ColumnCount = 2;
             tradesInner.RowCount = 1;
-            tradesInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            tradesInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            tradesInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 54F));
+            tradesInner.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 46F));
             tradesInner.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 
             tradeColMode.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -645,8 +652,9 @@ namespace NewEditor.Forms
             tradeModeGiven.Location = new System.Drawing.Point(4, 26);
             tradeModeGiven.Text = "Randomize Given Pokemon Only";
             tradeModeBoth.AutoSize = true;
+            tradeModeBoth.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             tradeModeBoth.Location = new System.Drawing.Point(4, 48);
-            tradeModeBoth.Text = "Randomize Both Requested && Given Pokemon";
+            tradeModeBoth.Text = "Randomize given + requested Pokémon";
             tradeColMode.Controls.Add(tradeModeUnchanged);
             tradeColMode.Controls.Add(tradeModeGiven);
             tradeColMode.Controls.Add(tradeModeBoth);
@@ -1176,6 +1184,10 @@ namespace NewEditor.Forms
             labelPlaceholderMisc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             tabPageMiscTweaks.Controls.Add(labelPlaceholderMisc);
 
+            tabPageSettings.Text = "Settings";
+            tabPageSettings.Padding = new System.Windows.Forms.Padding(8);
+
+            mainTabs.TabPages.Add(tabPageSettings);
             mainTabs.TabPages.Add(tabPagePokemonTraits);
             mainTabs.TabPages.Add(tabPageGeneShuffle);
             mainTabs.TabPages.Add(tabPageStartersStaticsTrades);
@@ -1196,6 +1208,7 @@ namespace NewEditor.Forms
             panelTop.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(seedNumeric)).EndInit();
             mainTabs.ResumeLayout(false);
+            tabPageSettings.ResumeLayout(false);
             tabPagePokemonTraits.ResumeLayout(false);
             tabPageGeneShuffle.ResumeLayout(false);
             tabPageStartersStaticsTrades.ResumeLayout(false);
@@ -1259,7 +1272,7 @@ namespace NewEditor.Forms
             tabPageMiscTweaks.ResumeLayout(false);
             ResumeLayout(false);
 
-            mainTabs.SelectedIndex = 1;
+            mainTabs.SelectedIndex = 0;
         }
     }
 }

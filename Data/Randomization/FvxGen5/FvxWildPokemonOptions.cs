@@ -51,6 +51,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public bool LevelModifierEnabled { get; set; }
         public int LevelModifierPercent { get; set; }
 
+        public FvxRandomizerGlobalOptions Global { get; set; }
+
         public bool AnyRandomizationActive =>
             RandomizeWildPokemon
             || SetMinimumCatchRate

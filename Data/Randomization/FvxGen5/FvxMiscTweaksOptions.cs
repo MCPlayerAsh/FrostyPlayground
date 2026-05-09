@@ -13,8 +13,6 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public bool DisableLowHpMusic { get; set; }
         public bool ForgettableHms { get; set; }
         public bool BalanceStaticLevels { get; set; }
-        public bool RandomizeCatchingTutorial { get; set; }
-        public bool RandomizePcPotion { get; set; }
 
         public bool AnySelected =>
             FastestText
@@ -27,8 +25,6 @@ namespace NewEditor.Data.Randomization.FvxGen5
             || RunWithoutRunningShoes
             || DisableLowHpMusic
             || ForgettableHms
-            || BalanceStaticLevels
-            || RandomizeCatchingTutorial
-            || RandomizePcPotion;
+            || BalanceStaticLevels;
     }
 }

@@ -185,5 +185,39 @@ namespace NewEditor.Forms
             opt.TutorLevelupMoveSanity = _tutorLevelupSanity.Checked;
             opt.TutorFollowEvolutions = _tutorFollowEvos.Checked;
         }
+
+        public void LoadFromOptions(FvxRandomizerOptions opt)
+        {
+            if (opt == null) return;
+            _tmMovesMod.SelectedIndex = (int)opt.TmMovesMod;
+            _keepFieldTms.Checked = opt.KeepFieldMoveTms;
+            _forceGoodTms.Checked = opt.TmsForceGoodDamaging;
+            _goodTmPct.Value = Math.Max(_goodTmPct.Minimum, Math.Min(_goodTmPct.Maximum, opt.TmsGoodDamagingPercent));
+
+            switch (opt.TmHmCompatMod)
+            {
+                case FvxTmHmCompatMod.RandomPreferType: _tmCompatMod.SelectedIndex = 1; break;
+                case FvxTmHmCompatMod.CompletelyRandom: _tmCompatMod.SelectedIndex = 2; break;
+                case FvxTmHmCompatMod.FullCompatibility: _tmCompatMod.SelectedIndex = 3; break;
+                default: _tmCompatMod.SelectedIndex = 0; break;
+            }
+            _tmLevelupSanity.Checked = opt.TmLevelupMoveSanity;
+            _tmFollowEvos.Checked = opt.TmsFollowEvolutions;
+            _fullHmCompat.Checked = opt.FullHmCompatibility;
+
+            _tutorMovesMod.SelectedIndex = (int)opt.TutorMovesMod;
+            _keepFieldTutors.Checked = opt.KeepFieldMoveTutors;
+            _forceGoodTutors.Checked = opt.TutorsForceGoodDamaging;
+            _goodTutorPct.Value = Math.Max(_goodTutorPct.Minimum, Math.Min(_goodTutorPct.Maximum, opt.TutorsGoodDamagingPercent));
+            switch (opt.TutorCompatMod)
+            {
+                case FvxTutorCompatMod.RandomPreferType: _tutorCompatMod.SelectedIndex = 1; break;
+                case FvxTutorCompatMod.CompletelyRandom: _tutorCompatMod.SelectedIndex = 2; break;
+                case FvxTutorCompatMod.FullCompatibility: _tutorCompatMod.SelectedIndex = 3; break;
+                default: _tutorCompatMod.SelectedIndex = 0; break;
+            }
+            _tutorLevelupSanity.Checked = opt.TutorLevelupMoveSanity;
+            _tutorFollowEvos.Checked = opt.TutorFollowEvolutions;
+        }
     }
 }

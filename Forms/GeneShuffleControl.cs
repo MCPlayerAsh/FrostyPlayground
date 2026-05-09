@@ -49,6 +49,30 @@ namespace NewEditor.Forms
             return opt;
         }
 
+        public void ApplyLearnsetOptions(GeneShuffleTypeMode typeMode, FvxRandomizerOptions learn)
+        {
+            int tm = (int)typeMode;
+            if (tm >= 0 && tm < typeModeCombo.Items.Count) typeModeCombo.SelectedIndex = tm;
+            if (learn == null) return;
+            int m = (int)learn.MovesetsMod;
+            if (m >= 0 && m < movesetModCombo.Items.Count) movesetModCombo.SelectedIndex = m;
+            blockBrokenMovesCheck.Checked = learn.BlockBrokenMovesetMoves;
+            guaranteedStartCheck.Checked = learn.StartWithGuaranteedMoves;
+            int g = learn.GuaranteedMoveCount;
+            if (g < guaranteedCountNumeric.Minimum) g = (int)guaranteedCountNumeric.Minimum;
+            if (g > guaranteedCountNumeric.Maximum) g = (int)guaranteedCountNumeric.Maximum;
+            guaranteedCountNumeric.Value = g;
+            reorderDamagingCheck.Checked = learn.ReorderDamagingMoves;
+            forceGoodDamagingCheck.Checked = learn.MovesetsForceGoodDamaging;
+            int p = learn.MovesetsGoodDamagingPercent;
+            if (p < goodDamagingPercentNumeric.Minimum) p = (int)goodDamagingPercentNumeric.Minimum;
+            if (p > goodDamagingPercentNumeric.Maximum) p = (int)goodDamagingPercentNumeric.Maximum;
+            goodDamagingPercentNumeric.Value = p;
+            evoMoveAllCheck.Checked = learn.EvolutionMovesForAll;
+            randomizeEggCheck.Checked = learn.RandomizeEggMoves;
+            tmHmTutorsControl.LoadFromOptions(learn);
+        }
+
         /// <summary>True when the user actually picked something other than "Unchanged" anywhere.</summary>
         public bool AnyOptionsActive
         {
