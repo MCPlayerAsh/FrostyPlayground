@@ -10,6 +10,8 @@ namespace NewEditor.Forms
     public partial class FvxRandomizerForm : Form
     {
         bool _syncingStaticsLevel;
+        bool _syncingFoeEvolve;
+        bool _syncingFoeLevel;
         readonly ToolTip _fvxTips = new ToolTip();
 
         public FvxRandomizerForm()
@@ -28,6 +30,13 @@ namespace NewEditor.Forms
             UpdateIncludeFairyUi();
             if (MainEditor.RomType == RomType.BW1)
                 geneShuffleControl.SetTutorEnabled(false, "Move tutor compatibility (BW1 — not applicable)");
+            _fvxTips.SetToolTip(foeMidAllowNonStandard,
+                "Black 2 / White 2: when off, trainer randomization excludes extended personal-table slots after the National Dex (index 652+, e.g. Pokéstar Studios). When on, those entries are included in the same pool as everything else.");
+            UpdateFoeMiddleColumnEnabled();
+            UpdateFoeBattleStyleControls();
+            UpdateFoeEvolveControlsEnabled();
+            UpdateFoeLevelControlsEnabled();
+            UpdateFoeLatestEvoLabel();
         }
 
         /// <summary>Call after ROM/text NARCs are loaded so custom starter combos populate.</summary>
@@ -38,6 +47,7 @@ namespace NewEditor.Forms
             PopulateSingleTypeCombo();
             UpdateBwGateUi();
             UpdateIncludeFairyUi();
+            UpdateFoeMiddleColumnEnabled();
         }
 
         void FvxRandomizerForm_Shown(object sender, EventArgs e)
@@ -147,7 +157,8 @@ namespace NewEditor.Forms
             //   1) Fairy + Types (Gene Shuffle tab) so any "Same Typing" / type-aware downstream filters see new types.
             //   2) Pokemon Traits — base stats / abilities / evolutions / EXP curves.
             //   3) FVX learnsets / TMs / tutors (Gene Shuffle tab) — uses fresh types.
-            //   4) Starters / Statics / Trades — sees fresh BSTs and types.
+            //   4) Starters / Statics / Trades — sees fresh BSTs/types; must run before foe trainers when BW1 trio gyms follow scripts.
+            //   5) Foe Pokémon (trainers) — uses fresh learnsets/types for pools; reads script starters for Striaton themes.
             if (!RunGeneShuffleStep(opt.IncludeFairyTypes, rnd, out var geneErr))
             {
                 MessageBox.Show("Gene Shuffle step failed: " + (geneErr ?? ""));
@@ -167,10 +178,20 @@ namespace NewEditor.Forms
                 return;
             }
 
-            if (!FvxStartersStaticsTradesPipeline.TryRun(opt, rnd, out var err))
-                MessageBox.Show(string.IsNullOrEmpty(err) ? "Randomization did not run." : err);
-            else
-                MessageBox.Show("FVX-style settings applied. Save the ROM to keep changes.");
+            if (!FvxStartersStaticsTradesPipeline.TryRun(opt, rnd, out var startersErr))
+            {
+                MessageBox.Show(string.IsNullOrEmpty(startersErr) ? "Starters / statics / trades step did not run." : startersErr);
+                return;
+            }
+
+            var foeOpt = BuildFoePokemonOptionsFromUi();
+            if (!FvxFoePokemonPipeline.TryRun(foeOpt, rnd, out var foeErr))
+            {
+                MessageBox.Show("Foe Pokémon step failed: " + (foeErr ?? ""));
+                return;
+            }
+
+            MessageBox.Show("FVX-style settings applied. Save the ROM to keep changes.");
         }
 
         /// <summary>
@@ -208,6 +229,175 @@ namespace NewEditor.Forms
             if (!geneShuffleControl.AnyOptionsActive) return true;
             var opt = geneShuffleControl.BuildOptions();
             return FvxLearnsetPipeline.TryRun(opt, rnd, out error);
+        }
+
+        FvxFoePokemonOptions BuildFoePokemonOptionsFromUi()
+        {
+            var mode = FvxFoeTrainerPokemonMode.Unchanged;
+            switch (comboFoeTrainerPokemonMode.SelectedIndex)
+            {
+                case 1: mode = FvxFoeTrainerPokemonMode.Random; break;
+                case 2: mode = FvxFoeTrainerPokemonMode.Distributed; break;
+                case 3: mode = FvxFoeTrainerPokemonMode.MainPlaythrough; break;
+                case 4: mode = FvxFoeTrainerPokemonMode.TypeThemed; break;
+                case 5: mode = FvxFoeTrainerPokemonMode.TypeThemedElite4Gyms; break;
+                case 6: mode = FvxFoeTrainerPokemonMode.KeepThemed; break;
+                case 7: mode = FvxFoeTrainerPokemonMode.KeepThemeOrPrimary; break;
+            }
+
+            var tierDet = FvxFoeTierDetectionMode.Heuristic;
+            if (comboFoeTierDetection.SelectedIndex == 1)
+                tierDet = FvxFoeTierDetectionMode.MatchingVanillaUpr;
+
+            var battle = FvxFoeBattleStyleMode.Unchanged;
+            if (foeBattleRandom.Checked) battle = FvxFoeBattleStyleMode.Random;
+            else if (foeBattleSingle.Checked) battle = FvxFoeBattleStyleMode.SingleStyle;
+
+            return new FvxFoePokemonOptions
+            {
+                IncludeFairyTypes = checkIncludeFairy.Checked,
+                TrainerPokemonMode = mode,
+                TierDetectionMode = tierDet,
+                AdditionalPokemonBoss = foeAddBoss.Checked,
+                AdditionalPokemonImportant = foeAddImportant.Checked,
+                AdditionalPokemonImportantCount = (int)numFoeAddImportant.Value,
+                AdditionalPokemonRegular = foeAddRegular.Checked,
+                AdditionalPokemonRegularCount = (int)numFoeAddRegular.Value,
+                HeldItemsBoss = foeHeldBoss.Checked,
+                HeldItemsImportant = foeHeldImportant.Checked,
+                HeldItemsRegular = foeHeldRegular.Checked,
+                HeldConsumableOnly = foeHeldConsumable.Checked,
+                HeldSensibleItems = foeHeldSensible.Checked,
+                HeldHighestLevelOnly = foeHeldHighestLv.Checked,
+                DiverseTypesBoss = foeDivBoss.Checked,
+                DiverseTypesImportant = foeDivImportant.Checked,
+                DiverseTypesRegular = foeDivRegular.Checked,
+                BattleStyleMode = battle,
+                SingleStyleBattleType = comboFoeSingleBattleType.SelectedIndex >= 0 ? comboFoeSingleBattleType.SelectedIndex : 0,
+                RivalCarriesStarter = foeMidRivalStarter.Checked,
+                SimilarStrength = foeMidSimilar.Checked,
+                AvoidDuplicates = foeMidNoDupes.Checked,
+                WeightTypesByCount = foeMidWeightTypes.Checked,
+                UseLocalPokemon = foeMidLocal.Checked,
+                DontUseLegendaries = foeMidNoLegend.Checked,
+                NoEarlyWonderGuard = foeMidNoWG.Checked,
+                AllowAlternateFormes = foeMidAltForms.Checked,
+                AllowNonStandardPokemon = MainEditor.RomType == RomType.BW2 && foeMidAllowNonStandard.Checked,
+                LeagueUniquePokemon = foeMidLeagueUnique.Checked,
+                LeagueUniqueCount = (int)numFoeLeagueUnique.Value,
+                RandomizeTrainerNames = foeRightRandNames.Checked,
+                RandomizeTrainerClassNames = foeRightRandClass.Checked,
+                TrainersEvolvePokemon = chkFoeTrainersEvolve.Checked,
+                TrainersEvolvePercent = trackFoeEvolvePct.Value,
+                LevelPercentModifierEnabled = chkFoeLevelPct.Checked,
+                LevelPercentModifier = trackFoeLevelPct.Value,
+                Bw1TrioGymsMatchStarterTriangle = foeBw1TrioGymsStarters.Checked
+            };
+        }
+
+        void FoeTrainerPokemonModeChanged(object sender, EventArgs e) => UpdateFoeMiddleColumnEnabled();
+
+        void FoeMidLeagueUniqueChanged(object sender, EventArgs e) => UpdateFoeMiddleColumnEnabled();
+
+        void UpdateFoeMiddleColumnEnabled()
+        {
+            foeBw1TrioGymsStarters.Enabled = MainEditor.RomType == RomType.BW1;
+            bool on = comboFoeTrainerPokemonMode.SelectedIndex > 0;
+            foeMidRivalStarter.Enabled = on;
+            foeMidSimilar.Enabled = on;
+            foeMidNoDupes.Enabled = on;
+            foeMidWeightTypes.Enabled = on;
+            foeMidLocal.Enabled = on;
+            foeMidNoLegend.Enabled = on;
+            foeMidNoWG.Enabled = on;
+            foeMidAltForms.Enabled = on;
+            foeMidAllowNonStandard.Enabled = on && MainEditor.RomType == RomType.BW2;
+            foeMidLeagueUnique.Enabled = on;
+            numFoeLeagueUnique.Enabled = on && foeMidLeagueUnique.Checked;
+        }
+
+        void FoeBattleStyleChanged(object sender, EventArgs e) => UpdateFoeBattleStyleControls();
+
+        void UpdateFoeBattleStyleControls()
+            => comboFoeSingleBattleType.Enabled = foeBattleSingle.Checked;
+
+        void FoeEvolveCheckChanged(object sender, EventArgs e)
+        {
+            UpdateFoeEvolveControlsEnabled();
+            UpdateFoeLatestEvoLabel();
+        }
+
+        void UpdateFoeEvolveControlsEnabled()
+        {
+            bool on = chkFoeTrainersEvolve.Checked;
+            trackFoeEvolvePct.Enabled = on;
+            numFoeEvolvePct.Enabled = on;
+        }
+
+        void TrackFoeEvolveValueChanged(object sender, EventArgs e)
+        {
+            if (_syncingFoeEvolve) return;
+            _syncingFoeEvolve = true;
+            try
+            {
+                numFoeEvolvePct.Value = trackFoeEvolvePct.Value;
+            }
+            finally { _syncingFoeEvolve = false; }
+            UpdateFoeLatestEvoLabel();
+        }
+
+        void NumFoeEvolveValueChanged(object sender, EventArgs e)
+        {
+            if (_syncingFoeEvolve) return;
+            _syncingFoeEvolve = true;
+            try
+            {
+                int v = (int)numFoeEvolvePct.Value;
+                if (v < trackFoeEvolvePct.Minimum) v = trackFoeEvolvePct.Minimum;
+                if (v > trackFoeEvolvePct.Maximum) v = trackFoeEvolvePct.Maximum;
+                if (trackFoeEvolvePct.Value != v) trackFoeEvolvePct.Value = v;
+            }
+            finally { _syncingFoeEvolve = false; }
+            UpdateFoeLatestEvoLabel();
+        }
+
+        void UpdateFoeLatestEvoLabel()
+        {
+            if (!chkFoeTrainersEvolve.Checked || trackFoeEvolvePct.Value == 0)
+                lblFoeLatestEvo.Text = "Latest fully evolved level: —";
+            else
+                lblFoeLatestEvo.Text = "Latest fully evolved level: (varies by species / level)";
+        }
+
+        void FoeLevelPctCheckChanged(object sender, EventArgs e) => UpdateFoeLevelControlsEnabled();
+
+        void UpdateFoeLevelControlsEnabled()
+        {
+            bool on = chkFoeLevelPct.Checked;
+            trackFoeLevelPct.Enabled = on;
+            numFoeLevelPct.Enabled = on;
+        }
+
+        void TrackFoeLevelValueChanged(object sender, EventArgs e)
+        {
+            if (_syncingFoeLevel) return;
+            _syncingFoeLevel = true;
+            try { numFoeLevelPct.Value = trackFoeLevelPct.Value; }
+            finally { _syncingFoeLevel = false; }
+        }
+
+        void NumFoeLevelValueChanged(object sender, EventArgs e)
+        {
+            if (_syncingFoeLevel) return;
+            _syncingFoeLevel = true;
+            try
+            {
+                int v = (int)numFoeLevelPct.Value;
+                if (v < trackFoeLevelPct.Minimum) v = trackFoeLevelPct.Minimum;
+                if (v > trackFoeLevelPct.Maximum) v = trackFoeLevelPct.Maximum;
+                if (trackFoeLevelPct.Value != v) trackFoeLevelPct.Value = v;
+            }
+            finally { _syncingFoeLevel = false; }
         }
 
         FvxStartersStaticsTradesOptions BuildOptionsFromUi()
