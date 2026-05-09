@@ -12,16 +12,12 @@ namespace NewEditor
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-
-        public static MainEditor main;
-        
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            main = new MainEditor();
-            Application.Run(main);
+            Application.Run(new MainEditor());
         }
     }
 }

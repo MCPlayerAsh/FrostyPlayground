@@ -215,7 +215,7 @@ namespace NewEditor.Forms
 
         private void openTextFileButton_Click(object sender, EventArgs e)
         {
-            Program.main.OpenTextViewer(sender, e);
+            MainEditor.Instance.OpenTextViewer(sender, e);
             if (MainEditor.textViewer != null)
             {
                 MainEditor.textViewer.storyTextRadioButton.Checked = true;
@@ -314,7 +314,7 @@ namespace NewEditor.Forms
 
         private void openScriptFileButton_Click(object sender, EventArgs e)
         {
-            Program.main.OpenScriptEditor(sender, e);
+            MainEditor.Instance.OpenScriptEditor(sender, e);
             if (MainEditor.scriptEditor != null)
             {
                 if (scriptFileNumberBox.Value >= 0 && scriptFileNumberBox.Value < MainEditor.scriptEditor.scriptFileDropdown.Items.Count)
@@ -332,7 +332,7 @@ namespace NewEditor.Forms
 
         private void openEncounterFileButton_Click(object sender, EventArgs e)
         {
-            Program.main.OpenEncounterEditor(sender, e);
+            MainEditor.Instance.OpenEncounterEditor(sender, e);
             if (MainEditor.encounterEditor != null)
             {
                 if (encounterFileNumberBox.Value > 0 && encounterFileNumberBox.Value < MainEditor.encounterNarc.mainEncounterPools.Count) MainEditor.encounterEditor.encounterRouteNameDropdown.SelectedItem = MainEditor.encounterNarc.mainEncounterPools[(int)encounterFileNumberBox.Value];

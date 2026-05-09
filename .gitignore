@@ -4,3 +4,15 @@
 
 /obj
 /bin
+
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+
+# Local NuGet CLI if downloaded for restore
+nuget.exe

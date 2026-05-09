@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NewEditor.Data;
 using NewEditor.Data.NARCTypes;
@@ -255,7 +256,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 else
                     names[tr.nameID] = names[rnd.Next(names.Count)];
             }
-            try { MainEditor.textNarc.textFiles[VersionConstants.TrainerNameTextFileID].CompressData(); } catch { }
+            try { MainEditor.textNarc.textFiles[VersionConstants.TrainerNameTextFileID].CompressData(); }
+            catch (Exception ex) { Debug.WriteLine("[FvxFoePokemonRunner] Trainer name CompressData: " + ex.Message); }
         }
 
         static void RandomizeTrainerClasses(List<TrainerEntry> trainers, Random rnd)
@@ -273,7 +275,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     if (pickFrom.Count > 0)
                         classes[i] = pickFrom[rnd.Next(pickFrom.Count)];
                 }
-                try { MainEditor.textNarc.textFiles[VersionConstants.TrainerClassTextFileID].CompressData(); } catch { }
+                try { MainEditor.textNarc.textFiles[VersionConstants.TrainerClassTextFileID].CompressData(); }
+                catch (Exception ex) { Debug.WriteLine("[FvxFoePokemonRunner] Trainer class CompressData: " + ex.Message); }
             }
 
             byte max = (byte)(classes.Count - 1);
@@ -751,7 +754,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 if (n.IndexOf("Bianca", StringComparison.OrdinalIgnoreCase) >= 0) return true;
                 if (n.IndexOf("N", StringComparison.OrdinalIgnoreCase) >= 0) return true;
             }
-            catch { }
+            catch (Exception ex) { Debug.WriteLine("[FvxFoePokemonRunner] IsRivalTrainer name read: " + ex.Message); }
             return false;
         }
 

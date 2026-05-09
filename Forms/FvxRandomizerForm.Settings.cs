@@ -168,7 +168,7 @@ namespace NewEditor.Forms
         void RefreshSettingsRomLabels()
         {
             if (_lblRomDisplay == null) return;
-            string path = Program.main?.loadedRomPath ?? "";
+            string path = MainEditor.Instance?.loadedRomPath ?? "";
             string name = path.Length > 0 && File.Exists(path)
                 ? Path.GetFileName(path)
                 : "(no file)";
@@ -642,7 +642,7 @@ namespace NewEditor.Forms
                 MessageBox.Show("Choose a valid output directory for batch ROMs.");
                 return;
             }
-            if (string.IsNullOrEmpty(Program.main?.loadedRomPath) || !File.Exists(Program.main.loadedRomPath))
+            if (string.IsNullOrEmpty(MainEditor.Instance?.loadedRomPath) || !File.Exists(MainEditor.Instance.loadedRomPath))
             {
                 MessageBox.Show("Load a ROM from a file path first (batch reloads from disk).");
                 return;
