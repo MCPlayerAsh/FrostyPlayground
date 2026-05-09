@@ -1,3 +1,11 @@
+# MIKE'S NOTE: #
+
+```
+==========================================================================================================================================
+I have bastardized this program beyond recognition. Curse my lack of care and my unprofessionalism on why I won't write an updated ReadMe;
+==========================================================================================================================================
+```
+
 # Frost's Gen 5 Editor #
 
 This is a general purpose editor made to handle all of the most important rom hacking features in a single user friendly package. It fully supports black 2 and white 2 roms and mostly supports black and white roms with a few features missing.
