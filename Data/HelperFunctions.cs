@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -39,6 +39,18 @@ namespace NewEditor.Data
         {
             data[offset] = (byte)(value & 0xFF);
             data[offset + 1] = (byte)((value >> 8) & 0xFF);
+        }
+
+        public static void WriteShort(RefByte[] data, int offset, int value)
+        {
+            data[offset] = (byte)(value & 0xFF);
+            data[offset + 1] = (byte)((value >> 8) & 0xFF);
+        }
+
+        public static void WriteByte(RefByte[] data, int offset, byte value)
+        {
+            if (offset >= 0 && offset < data.Length)
+                data[offset] = value;
         }
 
         public static void WriteInt(byte[] data, int offset, int value)

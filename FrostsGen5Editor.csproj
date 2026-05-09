@@ -150,6 +150,11 @@
     <Compile Include="Data\TextHandler.cs" />
     <Compile Include="Data\TypeShuffler.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5Constants.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TypeSupport.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5RomLayout.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TypeChart.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StartersStaticsTradesRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TradeScriptPatcher.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5EvolutionGraph.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveBanList.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveScoring.cs" />
@@ -158,6 +163,17 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxSpeciesMovesetRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxTmTutorCompatibilityRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxLearnsetPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxStartersStaticsTradesOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxStartersStaticsTradesPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5TradeStoryText.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5StarterAssetPatcher.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5AbilityBanLists.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5EvolutionMethods.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxPokemonTraitsOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxBaseStatRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxAbilityRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxEvolutionRandomizer.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxPokemonTraitsPipeline.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\EvolutionFamilyIndex.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleFairyPatch.cs" />
     <Compile Include="Data\Randomization\GeneShuffle\GeneShuffleOptions.cs" />
@@ -272,6 +288,24 @@
     <Compile Include="Forms\GeneShuffleForm.Designer.cs">
       <DependentUpon>GeneShuffleForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\PokemonTraitsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\PokemonTraitsControl.Designer.cs">
+      <DependentUpon>PokemonTraitsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\GeneShuffleControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\GeneShuffleControl.Designer.cs">
+      <DependentUpon>GeneShuffleControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FvxRandomizerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FvxRandomizerForm.Designer.cs">
+      <DependentUpon>FvxRandomizerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ScriptEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -354,6 +388,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\GeneShuffleForm.resx">
       <DependentUpon>GeneShuffleForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\PokemonTraitsControl.resx">
+      <DependentUpon>PokemonTraitsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GeneShuffleControl.resx">
+      <DependentUpon>GeneShuffleControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FvxRandomizerForm.resx">
+      <DependentUpon>FvxRandomizerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ScriptEditor.resx">
       <DependentUpon>ScriptEditor.cs</DependentUpon>
