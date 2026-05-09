@@ -4,7 +4,10 @@ namespace NewEditor.Data.Randomization.FvxGen5
     public enum FvxFoeBattleStyleMode
     {
         Unchanged,
+        /// <summary>Roll battle type independently for every trainer.</summary>
         Random,
+        /// <summary>Roll battle type once and apply that type to all eligible trainers.</summary>
+        RandomGlobal,
         SingleStyle,
     }
 
@@ -40,6 +43,14 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public FvxFoeBattleStyleMode BattleStyleMode { get; set; }
         /// <summary>0–3: Single, Double, Triple, Rotation (matches Trainer Editor combo order).</summary>
         public int SingleStyleBattleType { get; set; }
+
+        /// <summary>When set, boss-tier trainers use <see cref="UniqueBattleStyleBossBattleType"/> instead of <see cref="BattleStyleMode"/>.</summary>
+        public bool UniqueBattleStyleBoss { get; set; }
+        public int UniqueBattleStyleBossBattleType { get; set; }
+        public bool UniqueBattleStyleImportant { get; set; }
+        public int UniqueBattleStyleImportantBattleType { get; set; }
+        public bool UniqueBattleStyleRegular { get; set; }
+        public int UniqueBattleStyleRegularBattleType { get; set; }
 
         public bool RivalCarriesStarter { get; set; }
         public bool SimilarStrength { get; set; }
@@ -81,6 +92,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
             || RandomizeTrainerNames
             || RandomizeTrainerClassNames
             || BattleStyleMode != FvxFoeBattleStyleMode.Unchanged
+            || UniqueBattleStyleBoss || UniqueBattleStyleImportant || UniqueBattleStyleRegular
             || LevelPercentModifierEnabled
             || TrainersEvolvePokemon
             || AdditionalPokemonBoss || AdditionalPokemonImportant || AdditionalPokemonRegular

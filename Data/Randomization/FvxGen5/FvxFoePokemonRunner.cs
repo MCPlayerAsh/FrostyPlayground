@@ -79,6 +79,10 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 RandomizeTrainerClasses(trainers, rnd);
 
             var processOrder = BuildTrainerProcessingOrder(trainers.Count, tags, opt, bw2, rnd);
+            byte globalBattleType = 0;
+            if (opt.BattleStyleMode == FvxFoeBattleStyleMode.RandomGlobal)
+                globalBattleType = (byte)rnd.Next(0, 4);
+
             foreach (int ti in processOrder)
             {
                 var tr = trainers[ti];
@@ -90,8 +94,9 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 bool inMainPlaythrough = Gen5TrainerLists.IsMainPlaythroughTrainer(bw2, ti + 1);
                 bool affectsPokemon = opt.TrainerPokemonMode != FvxFoeTrainerPokemonMode.Unchanged;
 
-                if (opt.BattleStyleMode != FvxFoeBattleStyleMode.Unchanged)
-                    ApplyBattleStyle(tr, opt, rnd);
+                if (!TryApplyTierUniqueBattleStyle(tr, tier, opt)
+                    && opt.BattleStyleMode != FvxFoeBattleStyleMode.Unchanged)
+                    ApplyBattleStyle(tr, opt, rnd, globalBattleType);
 
                 if (opt.LevelPercentModifierEnabled)
                     ApplyLevelModifier(tr, opt.LevelPercentModifier, tag);
@@ -249,12 +254,43 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 tr.trainerClass = (byte)rnd.Next(0, max + 1);
         }
 
-        static void ApplyBattleStyle(TrainerEntry tr, FvxFoePokemonOptions opt, Random rnd)
+        /// <returns>True if a tier-specific fixed battle type was applied (main battle style options are skipped).</returns>
+        static bool TryApplyTierUniqueBattleStyle(TrainerEntry tr, FvxFoeTrainerTier tier, FvxFoePokemonOptions opt)
+        {
+            bool use = false;
+            int idx = 0;
+            switch (tier)
+            {
+                case FvxFoeTrainerTier.Boss:
+                    use = opt.UniqueBattleStyleBoss;
+                    idx = opt.UniqueBattleStyleBossBattleType;
+                    break;
+                case FvxFoeTrainerTier.Important:
+                    use = opt.UniqueBattleStyleImportant;
+                    idx = opt.UniqueBattleStyleImportantBattleType;
+                    break;
+                case FvxFoeTrainerTier.Regular:
+                    use = opt.UniqueBattleStyleRegular;
+                    idx = opt.UniqueBattleStyleRegularBattleType;
+                    break;
+            }
+            if (!use) return false;
+            if (idx < 0) idx = 0;
+            if (idx > 3) idx = 3;
+            tr.battleType = (byte)idx;
+            EnsurePartySizeForBattleType(tr);
+            return true;
+        }
+
+        static void ApplyBattleStyle(TrainerEntry tr, FvxFoePokemonOptions opt, Random rnd, byte globalBattleType)
         {
             switch (opt.BattleStyleMode)
             {
                 case FvxFoeBattleStyleMode.Random:
                     tr.battleType = (byte)rnd.Next(0, 4);
+                    break;
+                case FvxFoeBattleStyleMode.RandomGlobal:
+                    tr.battleType = globalBattleType;
                     break;
                 case FvxFoeBattleStyleMode.SingleStyle:
                     int v = opt.SingleStyleBattleType;
@@ -266,15 +302,21 @@ namespace NewEditor.Data.Randomization.FvxGen5
             EnsurePartySizeForBattleType(tr);
         }
 
+        /// <summary>
+        /// Matches UPR-FVX <c>BattleStyle.getRequiredPokemonCount</c>: double = 2, triple and rotation = 3.
+        /// </summary>
+        static int RequiredPartyCountForBattleType(byte battleType)
+        {
+            if (battleType == 1) return 2;
+            if (battleType == 2 || battleType == 3) return 3;
+            return 1;
+        }
+
         static void EnsurePartySizeForBattleType(TrainerEntry tr)
         {
-            int need = 1;
-            if (tr.battleType == 1) need = 2;
-            else if (tr.battleType == 2) need = 3;
+            int need = RequiredPartyCountForBattleType(tr.battleType);
             if (tr.numPokemon < need)
-            {
                 ExpandParty(tr, need - tr.numPokemon);
-            }
         }
 
         static void ExpandParty(TrainerEntry tr, int add)

@@ -32,6 +32,9 @@ namespace NewEditor.Forms
                 geneShuffleControl.SetTutorEnabled(false, "Move tutor compatibility (BW1 — not applicable)");
             _fvxTips.SetToolTip(foeMidAllowNonStandard,
                 "Black 2 / White 2: when off, trainer randomization excludes extended personal-table slots after the National Dex (index 652+, e.g. Pokéstar Studios). When on, those entries are included in the same pool as everything else.");
+            _fvxTips.SetToolTip(grpFoeBattleTier,
+                "Uses Boss / Important / Regular tier detection (same as Tier detection above). Checked tiers always get the selected battle type; other tiers use the Battle style radios.");
+            UpdateFoeBattleTierComboEnabled();
             UpdateFoeMiddleColumnEnabled();
             UpdateFoeBattleStyleControls();
             UpdateFoeEvolveControlsEnabled();
@@ -250,8 +253,10 @@ namespace NewEditor.Forms
                 tierDet = FvxFoeTierDetectionMode.MatchingVanillaUpr;
 
             var battle = FvxFoeBattleStyleMode.Unchanged;
-            if (foeBattleRandom.Checked) battle = FvxFoeBattleStyleMode.Random;
+            if (foeBattleRandomEach.Checked) battle = FvxFoeBattleStyleMode.Random;
+            else if (foeBattleRandomGlobal.Checked) battle = FvxFoeBattleStyleMode.RandomGlobal;
             else if (foeBattleSingle.Checked) battle = FvxFoeBattleStyleMode.SingleStyle;
+            bool pokemonModeActive = mode != FvxFoeTrainerPokemonMode.Unchanged;
 
             return new FvxFoePokemonOptions
             {
@@ -274,16 +279,22 @@ namespace NewEditor.Forms
                 DiverseTypesRegular = foeDivRegular.Checked,
                 BattleStyleMode = battle,
                 SingleStyleBattleType = comboFoeSingleBattleType.SelectedIndex >= 0 ? comboFoeSingleBattleType.SelectedIndex : 0,
-                RivalCarriesStarter = foeMidRivalStarter.Checked,
-                SimilarStrength = foeMidSimilar.Checked,
-                AvoidDuplicates = foeMidNoDupes.Checked,
-                WeightTypesByCount = foeMidWeightTypes.Checked,
-                UseLocalPokemon = foeMidLocal.Checked,
-                DontUseLegendaries = foeMidNoLegend.Checked,
-                NoEarlyWonderGuard = foeMidNoWG.Checked,
-                AllowAlternateFormes = foeMidAltForms.Checked,
-                AllowNonStandardPokemon = MainEditor.RomType == RomType.BW2 && foeMidAllowNonStandard.Checked,
-                LeagueUniquePokemon = foeMidLeagueUnique.Checked,
+                UniqueBattleStyleBoss = foeBattleTierBoss.Checked,
+                UniqueBattleStyleBossBattleType = comboFoeBattleTierBoss.SelectedIndex >= 0 ? comboFoeBattleTierBoss.SelectedIndex : 0,
+                UniqueBattleStyleImportant = foeBattleTierImportant.Checked,
+                UniqueBattleStyleImportantBattleType = comboFoeBattleTierImportant.SelectedIndex >= 0 ? comboFoeBattleTierImportant.SelectedIndex : 0,
+                UniqueBattleStyleRegular = foeBattleTierRegular.Checked,
+                UniqueBattleStyleRegularBattleType = comboFoeBattleTierRegular.SelectedIndex >= 0 ? comboFoeBattleTierRegular.SelectedIndex : 0,
+                RivalCarriesStarter = pokemonModeActive && foeMidRivalStarter.Checked,
+                SimilarStrength = pokemonModeActive && foeMidSimilar.Checked,
+                AvoidDuplicates = pokemonModeActive && foeMidNoDupes.Checked,
+                WeightTypesByCount = pokemonModeActive && foeMidWeightTypes.Checked,
+                UseLocalPokemon = pokemonModeActive && foeMidLocal.Checked,
+                DontUseLegendaries = pokemonModeActive && foeMidNoLegend.Checked,
+                NoEarlyWonderGuard = pokemonModeActive && foeMidNoWG.Checked,
+                AllowAlternateFormes = pokemonModeActive && foeMidAltForms.Checked,
+                AllowNonStandardPokemon = pokemonModeActive && MainEditor.RomType == RomType.BW2 && foeMidAllowNonStandard.Checked,
+                LeagueUniquePokemon = pokemonModeActive && foeMidLeagueUnique.Checked,
                 LeagueUniqueCount = (int)numFoeLeagueUnique.Value,
                 RandomizeTrainerNames = foeRightRandNames.Checked,
                 RandomizeTrainerClassNames = foeRightRandClass.Checked,
@@ -317,6 +328,15 @@ namespace NewEditor.Forms
         }
 
         void FoeBattleStyleChanged(object sender, EventArgs e) => UpdateFoeBattleStyleControls();
+
+        void FoeBattleTierUniqueChanged(object sender, EventArgs e) => UpdateFoeBattleTierComboEnabled();
+
+        void UpdateFoeBattleTierComboEnabled()
+        {
+            comboFoeBattleTierBoss.Enabled = foeBattleTierBoss.Checked;
+            comboFoeBattleTierImportant.Enabled = foeBattleTierImportant.Checked;
+            comboFoeBattleTierRegular.Enabled = foeBattleTierRegular.Checked;
+        }
 
         void UpdateFoeBattleStyleControls()
             => comboFoeSingleBattleType.Enabled = foeBattleSingle.Checked;
