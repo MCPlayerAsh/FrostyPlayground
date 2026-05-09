@@ -1067,7 +1067,6 @@ namespace NewEditor.Forms
             mainTabs.TabPages.Add(tabPagePokemonTraits);
             mainTabs.TabPages.Add(tabPageGeneShuffle);
             mainTabs.TabPages.Add(tabPageStartersStaticsTrades);
-            mainTabs.TabPages.Add(tabPageMovesMovesets);
             mainTabs.TabPages.Add(tabPageFoePokemon);
             mainTabs.TabPages.Add(tabPageWildPokemon);
             mainTabs.TabPages.Add(tabPageTmHmsTutors);

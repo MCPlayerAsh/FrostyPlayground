@@ -178,6 +178,9 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5NonStandardSpecies.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxFoePokemonPipeline.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxFoePokemonRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonRunner.cs" />
     <Compile Include="Data\Randomization\FvxGen5\Gen5EliteFourFallback.cs" />
     <Compile Include="Data\Randomization\FvxGen5\Gen5GymEliteTypeThemes.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxFoeTrainerEnums.cs" />
