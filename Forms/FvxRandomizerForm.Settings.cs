@@ -291,45 +291,34 @@ namespace NewEditor.Forms
         {
             seedNumeric.Value = c.Seed;
             checkIncludeFairy.Checked = c.IncludeFairyTypes;
-            if (c.Traits != null) traitsControl.ApplyFromOptions(c.Traits);
+            traitsControl.ApplyFromOptions(c.Traits);
             int gtm = c.GeneShuffleTypeMode;
             if (gtm < 0 || gtm > 2) gtm = 0;
             geneShuffleControl.ApplyLearnsetOptions((GeneShuffleTypeMode)gtm, c.GeneLearn);
-            if (c.Starters != null) ApplyStartersOptionsToUi(c.Starters);
-            if (c.Wild != null) ApplyWildOptionsToUi(c.Wild);
-            if (c.Foe != null) ApplyFoeOptionsToUi(c.Foe);
-            if (c.Items != null) ApplyItemsOptionsToUi(c.Items);
-            if (c.Misc != null) ApplyMiscOptionsToUi(c.Misc);
+            ApplyStartersOptionsToUi(c.Starters);
+            ApplyWildOptionsToUi(c.Wild);
+            ApplyFoeOptionsToUi(c.Foe);
+            ApplyItemsOptionsToUi(c.Items);
+            ApplyMiscOptionsToUi(c.Misc);
 
-            if (c.General != null)
-            {
-                _setLimitPokemon.Checked = c.General.LimitPokemon;
-                _limitSpeciesAllowlist.Clear();
-                if (c.General.AllowedSpecies != null)
-                    foreach (var x in c.General.AllowedSpecies) _limitSpeciesAllowlist.Add(x);
-                _setBanIrregular.Checked = c.General.BanIrregularAltFormes;
-                _setBanPremature.Checked = c.General.BanPrematureEvos;
-                _setRandomizeIntro.Checked = c.General.RandomizeIntroMon;
-                _setRaceMode.Checked = c.General.RaceMode;
-            }
+            _setLimitPokemon.Checked = c.General.LimitPokemon;
+            _limitSpeciesAllowlist.Clear();
+            if (c.General.AllowedSpecies != null)
+                foreach (var x in c.General.AllowedSpecies) _limitSpeciesAllowlist.Add(x);
+            _setBanIrregular.Checked = c.General.BanIrregularAltFormes;
+            _setBanPremature.Checked = c.General.BanPrematureEvos;
+            _setRandomizeIntro.Checked = c.General.RandomizeIntroMon;
+            _setRaceMode.Checked = c.General.RaceMode;
 
-            if (c.Batch != null)
-            {
-                _batchEnabled.Checked = c.Batch.Enabled;
-                _batchCount.Value = Math.Max(_batchCount.Minimum, Math.Min(_batchCount.Maximum, c.Batch.Count));
-                _batchStartIndex.Value = Math.Max(_batchStartIndex.Minimum, Math.Min(_batchStartIndex.Maximum, c.Batch.StartingIndex));
-                _batchPrefix.Text = c.Batch.FileNamePrefix ?? "";
-                _batchOutDir.Text = c.Batch.OutputDirectory ?? "";
-                _batchLogs.Checked = c.Batch.GenerateLogs;
-                _batchAdvanceIndex.Checked = c.Batch.AutoAdvanceStartingIndex;
-            }
+            _batchEnabled.Checked = c.Batch.Enabled;
+            _batchCount.Value = Math.Max(_batchCount.Minimum, Math.Min(_batchCount.Maximum, c.Batch.Count));
+            _batchStartIndex.Value = Math.Max(_batchStartIndex.Minimum, Math.Min(_batchStartIndex.Maximum, c.Batch.StartingIndex));
+            _batchPrefix.Text = c.Batch.FileNamePrefix ?? "";
+            _batchOutDir.Text = c.Batch.OutputDirectory ?? "";
+            _batchLogs.Checked = c.Batch.GenerateLogs;
+            _batchAdvanceIndex.Checked = c.Batch.AutoAdvanceStartingIndex;
 
-            UpdateBwGateUi();
-            UpdateIncludeFairyUi();
-            UpdateFoeMiddleColumnEnabled();
-            UpdateWildControlsEnabled();
-            UpdateItemsControlsEnabled();
-            UpdateMiscTweaksEnabled();
+            RefreshUiAfterSettingsPresetApplied();
         }
 
         void ApplyStartersOptionsToUi(FvxStartersStaticsTradesOptions o)

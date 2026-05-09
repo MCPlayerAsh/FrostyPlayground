@@ -152,6 +152,9 @@ namespace NewEditor.Forms
         {
             var names = MainEditor.textNarc?.textFiles?[VersionConstants.PokemonNameTextFileID]?.text;
             var combos = new[] { comboCustomStarter0, comboCustomStarter1, comboCustomStarter2 };
+            var prev = new int[3];
+            for (int i = 0; i < 3; i++)
+                prev[i] = combos[i].SelectedIndex;
             if (names == null || names.Count == 0)
             {
                 foreach (var c in combos)
@@ -171,7 +174,7 @@ namespace NewEditor.Forms
             for (int i = 0; i < 3; i++)
             {
                 var c = combos[i];
-                int want = defaults[i];
+                int want = prev[i] >= 0 && prev[i] < c.Items.Count ? prev[i] : defaults[i];
                 if (want < c.Items.Count)
                     c.SelectedIndex = want;
                 else if (c.Items.Count > 1)
@@ -182,6 +185,7 @@ namespace NewEditor.Forms
 
         void PopulateSingleTypeCombo()
         {
+            int prev = comboSingleType.SelectedIndex;
             comboSingleType.Items.Clear();
             comboSingleType.Items.Add("Random");
             var typeNames = MainEditor.textNarc?.textFiles?[VersionConstants.TypeNameTextFileID]?.text;
@@ -191,7 +195,12 @@ namespace NewEditor.Forms
                     comboSingleType.Items.Add(t);
             }
             if (comboSingleType.Items.Count > 0)
-                comboSingleType.SelectedIndex = 0;
+            {
+                if (prev >= 0 && prev < comboSingleType.Items.Count)
+                    comboSingleType.SelectedIndex = prev;
+                else
+                    comboSingleType.SelectedIndex = 0;
+            }
         }
 
         void ApplyClick(object sender, EventArgs e)
@@ -940,6 +949,58 @@ namespace NewEditor.Forms
             bool on = checkStaticsLevelPct.Checked;
             trackStaticsLevelPct.Enabled = on;
             numericStaticsLevelPct.Enabled = on;
+        }
+
+        /// <summary>
+        /// JSON load sets control values directly; WinForms does not always re-run the same handlers as a user click.
+        /// Sync paired track/numeric controls and re-apply enable logic so <see cref="BuildOptionsFromUi"/> / pipeline match the preset.
+        /// </summary>
+        void RefreshUiAfterSettingsPresetApplied()
+        {
+            SyncTrackBarNumericPairsAfterBulkApply();
+            UpdateStarterCustomEnabled();
+            UpdateSingleTypeEnabled();
+            UpdateStaticsLevelControlsEnabled();
+            UpdateFoeMiddleColumnEnabled();
+            UpdateFoeBattleTierComboEnabled();
+            UpdateFoeBattleStyleControls();
+            UpdateFoeEvolveControlsEnabled();
+            UpdateFoeLevelControlsEnabled();
+            UpdateFoeLatestEvoLabel();
+            UpdateWildControlsEnabled();
+            UpdateItemsControlsEnabled();
+            UpdateMiscTweaksEnabled();
+            UpdateBwGateUi();
+            UpdateIncludeFairyUi();
+
+            if (MainEditor.RomType == RomType.BW1)
+                geneShuffleControl.SetTutorEnabled(false, "Move tutor compatibility (BW1 — not applicable)");
+            else
+                geneShuffleControl.SetTutorEnabled(true);
+        }
+
+        static void SyncPair(NumericUpDown num, TrackBar track)
+        {
+            if (num == null || track == null) return;
+            int v = track.Value;
+            if (v < (int)num.Minimum) v = (int)num.Minimum;
+            if (v > (int)num.Maximum) v = (int)num.Maximum;
+            if ((int)num.Value != v) num.Value = v;
+        }
+
+        void SyncTrackBarNumericPairsAfterBulkApply()
+        {
+            try
+            {
+                SyncPair(numericStaticsLevelPct, trackStaticsLevelPct);
+                SyncPair(wildLevelModifierValue, wildLevelModifierTrack);
+                SyncPair(numFoeEvolvePct, trackFoeEvolvePct);
+                SyncPair(numFoeLevelPct, trackFoeLevelPct);
+            }
+            catch
+            {
+                /* controls not ready */
+            }
         }
 
         void TrackStaticsLevelValueChanged(object sender, EventArgs e)

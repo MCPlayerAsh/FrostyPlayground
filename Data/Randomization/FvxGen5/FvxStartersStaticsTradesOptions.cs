@@ -75,8 +75,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public bool TradesRandomizeIvs { get; set; }
         public bool TradesRandomizeItems { get; set; }
 
-        /// <summary>Reserved for future starter sprite/cry NARC sync with chosen species (currently unused).</summary>
-        public bool StarterUpdateGraphicsAndCries { get; set; }
+        /// <summary>Starter ball graphics, cries, story text, and Pokédex script sync with chosen species.</summary>
+        public bool StarterUpdateGraphicsAndCries { get; set; } = true;
 
         public FvxRandomizerGlobalOptions Global { get; set; }
     }

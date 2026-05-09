@@ -15,7 +15,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
         const string ForceChallengeModeLocatorHex = "816A406B0B1C07490022434090000858834201D1";
         const string LowHealthMusicLocatorHex = "00D10127";
         const string ForgettableHmsBeforeHex = "084A002359005118B8310988884201D101207047591C09060B0E062BF2D300207047C046";
-        const string ForgettableHmsAfterHex = "000000000000000000000000000000000000000000000000000000000000002070470000000000";
+        /// <summary>Must match FvxGen5MiscTweaks HmsForgettableAfter (UPR US ARM9).</summary>
+        const string ForgettableHmsAfterHex = "0000000000000000000000000000000000000000000000000000000000000000207047000000000000";
         const int ScriptListTerminator = 0xFD13;
         const int HiddenItemSetVarCommand = 0x2A;
         const int HiddenItemVarSet = 0x8000;
@@ -250,6 +251,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
             var arm9 = MainEditor.fileSystem?.arm9;
             if (arm9 == null)
                 return "ARM9 data is not loaded.";
+            if (!FvxGen5UsRomTables.TryGetHmForgettableArm9Offset(MainEditor.RomTypeId, out int off))
+                return "Forgettable HMs are only supported for US Pokémon Black/White/B2/W2 (check ROM type).";
 
             bool wasCompressed = arm9.Count < 600000;
             byte[] work = wasCompressed ? BLZDecoder.BLZ_DecodePub(arm9.ToArray()) : arm9.ToArray();
@@ -258,12 +261,17 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
             byte[] before = HexToBytes(ForgettableHmsBeforeHex);
             byte[] after = HexToBytes(ForgettableHmsAfterHex);
-            int idx = IndexOf(work, before);
-            if (idx < 0)
-                return "Forgettable HMs patch location was not found.";
-            if (idx + after.Length > work.Length)
+            if (off < 0 || off + before.Length > work.Length)
+                return "Forgettable HMs offset is out of range for this ARM9.";
+            for (int i = 0; i < before.Length; i++)
+            {
+                if (work[off + i] != before[i])
+                    return "Forgettable HMs: bytes at the expected offset do not match (non-US ROM, different revision, or ARM9 already patched).";
+            }
+            if (off + after.Length > work.Length)
                 return "Forgettable HMs patch exceeds ARM9 size.";
-            Buffer.BlockCopy(after, 0, work, idx, after.Length);
+            for (int i = 0; i < after.Length; i++)
+                work[off + i] = after[i];
             WriteArm9(arm9, work, wasCompressed);
             return null;
         }
@@ -345,7 +353,10 @@ namespace NewEditor.Data.Randomization.FvxGen5
             var script = MainEditor.scriptNarc.scriptFiles[scriptId];
             var expanded = new byte[(script.bytes?.Length ?? 0) + 4];
             if (script.bytes != null && script.bytes.Length > 0)
-                Buffer.BlockCopy(script.bytes, 0, expanded, 0, script.bytes.Length);
+            {
+                for (int i = 0; i < script.bytes.Length; i++)
+                    expanded[i] = script.bytes[i];
+            }
             if (!TryApplyIpsPatch(expanded, patchPath, out var patchErr))
                 return "National Dex patch failed: " + patchErr;
             script.bytes = expanded.Select(b => (RefByte)b).ToArray();

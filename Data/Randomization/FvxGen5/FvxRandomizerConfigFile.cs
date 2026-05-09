@@ -47,13 +47,37 @@ namespace NewEditor.Data.Randomization.FvxGen5
         static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
             WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
         };
 
         public static string ToJson(FvxRandomizerConfigFile file) =>
             JsonSerializer.Serialize(file, Options);
 
-        public static FvxRandomizerConfigFile FromJson(string json) =>
-            JsonSerializer.Deserialize<FvxRandomizerConfigFile>(json, Options);
+        public static FvxRandomizerConfigFile FromJson(string json)
+        {
+            var cfg = JsonSerializer.Deserialize<FvxRandomizerConfigFile>(json, Options);
+            if (cfg == null) return null;
+            CoalesceNested(cfg);
+            return cfg;
+        }
+
+        /// <summary>
+        /// Missing JSON sections deserialize as null; without this, ApplyConfigToUi skips them and the UI keeps stale values.
+        /// </summary>
+        static void CoalesceNested(FvxRandomizerConfigFile c)
+        {
+            if (c.Traits == null) c.Traits = new FvxPokemonTraitsOptions();
+            if (c.GeneLearn == null) c.GeneLearn = new FvxRandomizerOptions();
+            if (c.Starters == null) c.Starters = new FvxStartersStaticsTradesOptions();
+            if (c.Wild == null) c.Wild = new FvxWildPokemonOptions();
+            if (c.Foe == null) c.Foe = new FvxFoePokemonOptions();
+            if (c.Items == null) c.Items = new FvxItemsOptions();
+            if (c.Misc == null) c.Misc = new FvxMiscTweaksOptions();
+            if (c.General == null) c.General = new FvxRandomizerSettingsGeneral();
+            if (c.Batch == null) c.Batch = new FvxRandomizerBatchSettings();
+        }
     }
 }
