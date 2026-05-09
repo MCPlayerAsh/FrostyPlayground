@@ -7,13 +7,20 @@ namespace NewEditor.Forms
 {
     public partial class LearnsetRandomizerFvxForm : Form
     {
+        readonly TmHmTutorsControl tmHmTutorsControl;
+
         public LearnsetRandomizerFvxForm()
         {
             InitializeComponent();
+            tmHmTutorsControl = new TmHmTutorsControl();
+            tmHmTutorsControl.Location = tmHmGroup.Location;
+            tmHmTutorsControl.Size = new System.Drawing.Size(420, 186);
+            Controls.Add(tmHmTutorsControl);
+            tmHmGroup.Visible = false;
+            tutorGroup.Visible = false;
             if (MainEditor.RomType == RomType.BW1)
             {
-                tutorGroup.Enabled = false;
-                tutorGroup.Text = "Move tutor compatibility (BW1 — not applicable)";
+                tmHmTutorsControl.SetTutorEnabled(false, "Move tutor compatibility (BW1 — not applicable)");
             }
         }
 
@@ -44,12 +51,9 @@ namespace NewEditor.Forms
                 MovesetsForceGoodDamaging = forceGoodDamagingCheck.Checked,
                 MovesetsGoodDamagingPercent = (int)goodDamagingPercentNumeric.Value,
                 EvolutionMovesForAll = evoMoveAllCheck.Checked,
-                RandomizeEggMoves = randomizeEggCheck.Checked,
-                TmHmCompatMod = (FvxTmHmCompatMod)tmHmModCombo.SelectedIndex,
-                TmsFollowEvolutions = tmFollowEvoCheck.Checked,
-                TutorCompatMod = (FvxTutorCompatMod)tutorModCombo.SelectedIndex,
-                TutorFollowEvolutions = tutorFollowEvoCheck.Checked
+                RandomizeEggMoves = randomizeEggCheck.Checked
             };
+            tmHmTutorsControl.ApplyToOptions(opt);
 
             if (!FvxLearnsetPipeline.TryRun(opt, rnd, out var err))
                 MessageBox.Show(string.IsNullOrEmpty(err) ? "FVX randomization failed." : err);

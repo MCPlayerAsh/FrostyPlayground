@@ -12,14 +12,30 @@ namespace NewEditor.Data.Randomization.FvxGen5
     {
         Unchanged,
         CompletelyRandom,
-        RandomPreferType
+        RandomPreferType,
+        FullCompatibility
     }
 
     public enum FvxTutorCompatMod
     {
         Unchanged,
         CompletelyRandom,
-        RandomPreferType
+        RandomPreferType,
+        FullCompatibility
+    }
+
+    public enum FvxTmMoveMod
+    {
+        Unchanged,
+        Random,
+        RandomNoGameBreaking
+    }
+
+    public enum FvxTutorMoveMod
+    {
+        Unchanged,
+        Random,
+        RandomNoGameBreaking
     }
 
     /// <summary>UI + apply flags for FVX-style randomization (Gen 5).</summary>
@@ -36,10 +52,22 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
         public bool RandomizeEggMoves { get; set; }
 
-        public FvxTmHmCompatMod TmHmCompatMod { get; set; }
-        public bool TmsFollowEvolutions { get; set; }
+        public FvxTmMoveMod TmMovesMod { get; set; }
+        public bool KeepFieldMoveTms { get; set; }
+        public bool TmsForceGoodDamaging { get; set; }
+        public int TmsGoodDamagingPercent { get; set; } = 0;
 
+        public FvxTmHmCompatMod TmHmCompatMod { get; set; }
+        public bool TmLevelupMoveSanity { get; set; }
+        public bool TmsFollowEvolutions { get; set; }
+        public bool FullHmCompatibility { get; set; }
+
+        public FvxTutorMoveMod TutorMovesMod { get; set; }
+        public bool KeepFieldMoveTutors { get; set; }
+        public bool TutorsForceGoodDamaging { get; set; }
+        public int TutorsGoodDamagingPercent { get; set; } = 0;
         public FvxTutorCompatMod TutorCompatMod { get; set; }
+        public bool TutorLevelupMoveSanity { get; set; }
         public bool TutorFollowEvolutions { get; set; }
     }
 }

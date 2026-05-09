@@ -11,9 +11,16 @@ namespace NewEditor.Forms
     /// </summary>
     public partial class GeneShuffleControl : UserControl
     {
+        readonly TmHmTutorsControl tmHmTutorsControl;
+
         public GeneShuffleControl()
         {
             InitializeComponent();
+            tmHmTutorsControl = new TmHmTutorsControl { Dock = DockStyle.Fill };
+            rootTable.Controls.Add(tmHmTutorsControl, 0, 2);
+            rootTable.SetRowSpan(tmHmTutorsControl, 2);
+            tmHmGroup.Visible = false;
+            tutorGroup.Visible = false;
         }
 
         public GeneShuffleTypeMode TypeMode => (GeneShuffleTypeMode)typeModeCombo.SelectedIndex;
@@ -21,14 +28,12 @@ namespace NewEditor.Forms
         /// <summary>Disable the tutor controls when the loaded ROM is BW1 (no tutors).</summary>
         public void SetTutorEnabled(bool enabled, string disabledReason = null)
         {
-            tutorGroup.Enabled = enabled;
-            if (!enabled && !string.IsNullOrEmpty(disabledReason))
-                tutorGroup.Text = disabledReason;
+            tmHmTutorsControl.SetTutorEnabled(enabled, disabledReason);
         }
 
         public FvxRandomizerOptions BuildOptions()
         {
-            return new FvxRandomizerOptions
+            var opt = new FvxRandomizerOptions
             {
                 MovesetsMod = (FvxMovesetsMod)movesetModCombo.SelectedIndex,
                 BlockBrokenMovesetMoves = blockBrokenMovesCheck.Checked,
@@ -38,12 +43,10 @@ namespace NewEditor.Forms
                 MovesetsForceGoodDamaging = forceGoodDamagingCheck.Checked,
                 MovesetsGoodDamagingPercent = (int)goodDamagingPercentNumeric.Value,
                 EvolutionMovesForAll = evoMoveAllCheck.Checked,
-                RandomizeEggMoves = randomizeEggCheck.Checked,
-                TmHmCompatMod = (FvxTmHmCompatMod)tmHmModCombo.SelectedIndex,
-                TmsFollowEvolutions = tmFollowEvoCheck.Checked,
-                TutorCompatMod = (FvxTutorCompatMod)tutorModCombo.SelectedIndex,
-                TutorFollowEvolutions = tutorFollowEvoCheck.Checked
+                RandomizeEggMoves = randomizeEggCheck.Checked
             };
+            tmHmTutorsControl.ApplyToOptions(opt);
+            return opt;
         }
 
         /// <summary>True when the user actually picked something other than "Unchanged" anywhere.</summary>
@@ -52,8 +55,7 @@ namespace NewEditor.Forms
             get
             {
                 if (movesetModCombo.SelectedIndex != 0) return true;
-                if (tmHmModCombo.SelectedIndex != 0) return true;
-                if (tutorGroup.Enabled && tutorModCombo.SelectedIndex != 0) return true;
+                if (tmHmTutorsControl.AnyOptionsActive) return true;
                 return false;
             }
         }

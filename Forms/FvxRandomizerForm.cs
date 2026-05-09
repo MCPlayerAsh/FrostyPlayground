@@ -46,6 +46,19 @@ namespace NewEditor.Forms
         CheckBox wildLevelModifierEnabled;
         TrackBar wildLevelModifierTrack;
         NumericUpDown wildLevelModifierValue;
+        CheckBox miscFastestText;
+        CheckBox miscNationalDexAtStart;
+        CheckBox miscFastEggHatching;
+        CheckBox miscForceChallengeMode;
+        CheckBox miscBanLuckyEgg;
+        CheckBox miscNoFreeLuckyEgg;
+        CheckBox miscBanBigMoneyManiacItems;
+        CheckBox miscRunWithoutRunningShoes;
+        CheckBox miscDisableLowHpMusic;
+        CheckBox miscForgettableHms;
+        CheckBox miscBalanceStaticLevels;
+        CheckBox miscRandomizeCatchingTutorial;
+        CheckBox miscRandomizePcPotion;
 
         public FvxRandomizerForm()
         {
@@ -75,6 +88,10 @@ namespace NewEditor.Forms
             UpdateFoeLatestEvoLabel();
             InitializeWildTabUi();
             UpdateWildControlsEnabled();
+            InitializeMiscTweaksTabUi();
+            UpdateMiscTweaksEnabled();
+            HookItemsTabEvents();
+            UpdateItemsControlsEnabled();
         }
 
         /// <summary>Call after ROM/text NARCs are loaded so custom starter combos populate.</summary>
@@ -86,6 +103,7 @@ namespace NewEditor.Forms
             UpdateBwGateUi();
             UpdateIncludeFairyUi();
             UpdateFoeMiddleColumnEnabled();
+            UpdateMiscTweaksEnabled();
         }
 
         void FvxRandomizerForm_Shown(object sender, EventArgs e)
@@ -94,6 +112,7 @@ namespace NewEditor.Forms
             PopulateSingleTypeCombo();
             UpdateBwGateUi();
             UpdateIncludeFairyUi();
+            UpdateMiscTweaksEnabled();
         }
 
         /// <summary>White 1 cannot use Fairy Vpatch — mirror Gene Shuffle.</summary>
@@ -217,6 +236,13 @@ namespace NewEditor.Forms
                 return;
             }
 
+            var miscOpt = BuildMiscTweaksOptionsFromUi();
+            if (!FvxMiscTweaksPipeline.TryRun(miscOpt, rnd, out var miscErr))
+            {
+                MessageBox.Show("Misc Tweaks step failed: " + (miscErr ?? ""));
+                return;
+            }
+
             if (!FvxStartersStaticsTradesPipeline.TryRun(opt, rnd, out var startersErr))
             {
                 MessageBox.Show(string.IsNullOrEmpty(startersErr) ? "Starters / statics / trades step did not run." : startersErr);
@@ -227,6 +253,13 @@ namespace NewEditor.Forms
             if (!FvxWildPokemonPipeline.TryRun(wildOpt, rnd, out var wildErr))
             {
                 MessageBox.Show("Wild Pokémon step failed: " + (wildErr ?? ""));
+                return;
+            }
+
+            var itemsOpt = BuildItemsOptionsFromUi();
+            if (!FvxItemsPipeline.TryRun(itemsOpt, rnd, out var itemsErr))
+            {
+                MessageBox.Show("Items step failed: " + (itemsErr ?? ""));
                 return;
             }
 
@@ -272,8 +305,9 @@ namespace NewEditor.Forms
         bool RunGeneShuffleLearnsetStep(Random rnd, out string error)
         {
             error = null;
-            if (!geneShuffleControl.AnyOptionsActive) return true;
             var opt = geneShuffleControl.BuildOptions();
+            if (!geneShuffleControl.AnyOptionsActive)
+                return true;
             return FvxLearnsetPipeline.TryRun(opt, rnd, out error);
         }
 
@@ -387,6 +421,100 @@ namespace NewEditor.Forms
                 LevelModifierEnabled = wildLevelModifierEnabled.Checked,
                 LevelModifierPercent = wildLevelModifierTrack.Value
             };
+        }
+
+        FvxItemsOptions BuildItemsOptionsFromUi()
+        {
+            var fieldMode = FvxFieldItemsMod.Unchanged;
+            if (itemsFieldShuffle.Checked) fieldMode = FvxFieldItemsMod.Shuffle;
+            else if (itemsFieldRandom.Checked) fieldMode = FvxFieldItemsMod.Random;
+            else if (itemsFieldRandomEven.Checked) fieldMode = FvxFieldItemsMod.RandomEven;
+
+            var shopMode = FvxShopItemsMod.Unchanged;
+            if (itemsShopShuffle.Checked) shopMode = FvxShopItemsMod.Shuffle;
+            else if (itemsShopRandom.Checked) shopMode = FvxShopItemsMod.Random;
+
+            var pickupMode = FvxPickupItemsMod.Unchanged;
+            if (itemsPickupRandom.Checked) pickupMode = FvxPickupItemsMod.Random;
+
+            return new FvxItemsOptions
+            {
+                FieldItemsMod = fieldMode,
+                BanBadRandomFieldItems = fieldMode == FvxFieldItemsMod.Random || fieldMode == FvxFieldItemsMod.RandomEven
+                    ? itemsFieldBanBad.Checked
+                    : false,
+                ShopItemsMod = shopMode,
+                BanBadRandomShopItems = shopMode == FvxShopItemsMod.Random ? itemsShopBanBad.Checked : false,
+                BanRegularShopItems = shopMode == FvxShopItemsMod.Random ? itemsShopBanRegular.Checked : false,
+                BanOverpoweredShopItems = shopMode == FvxShopItemsMod.Random ? itemsShopBanOverpowered.Checked : false,
+                GuaranteeEvolutionItems = shopMode == FvxShopItemsMod.Random ? itemsShopGuaranteeEvolution.Checked : false,
+                GuaranteeXItems = shopMode == FvxShopItemsMod.Random ? itemsShopGuaranteeXItems.Checked : false,
+                BalanceShopPrices = itemsShopBalancePrices.Checked,
+                AddCheapRareCandiesToShops = itemsShopAddCheapRareCandy.Checked,
+                PickupItemsMod = pickupMode,
+                BanBadRandomPickupItems = pickupMode == FvxPickupItemsMod.Random ? itemsPickupBanBad.Checked : false
+            };
+        }
+
+        FvxMiscTweaksOptions BuildMiscTweaksOptionsFromUi()
+        {
+            return new FvxMiscTweaksOptions
+            {
+                FastestText = miscFastestText.Checked,
+                NationalDexAtStart = miscNationalDexAtStart.Checked,
+                FastEggHatching = miscFastEggHatching.Checked,
+                ForceChallengeMode = miscForceChallengeMode.Checked,
+                BanLuckyEgg = miscBanLuckyEgg.Checked,
+                NoFreeLuckyEgg = miscNoFreeLuckyEgg.Checked,
+                BanBigMoneyManiacItems = miscBanBigMoneyManiacItems.Checked,
+                RunWithoutRunningShoes = miscRunWithoutRunningShoes.Checked,
+                DisableLowHpMusic = miscDisableLowHpMusic.Checked,
+                ForgettableHms = miscForgettableHms.Checked,
+                BalanceStaticLevels = miscBalanceStaticLevels.Checked,
+                RandomizeCatchingTutorial = miscRandomizeCatchingTutorial.Checked,
+                RandomizePcPotion = miscRandomizePcPotion.Checked
+            };
+        }
+
+        void HookItemsTabEvents()
+        {
+            itemsFieldUnchanged.CheckedChanged += ItemsModeChanged;
+            itemsFieldShuffle.CheckedChanged += ItemsModeChanged;
+            itemsFieldRandom.CheckedChanged += ItemsModeChanged;
+            itemsFieldRandomEven.CheckedChanged += ItemsModeChanged;
+            itemsShopUnchanged.CheckedChanged += ItemsModeChanged;
+            itemsShopShuffle.CheckedChanged += ItemsModeChanged;
+            itemsShopRandom.CheckedChanged += ItemsModeChanged;
+            itemsPickupUnchanged.CheckedChanged += ItemsModeChanged;
+            itemsPickupRandom.CheckedChanged += ItemsModeChanged;
+        }
+
+        void ItemsModeChanged(object sender, EventArgs e) => UpdateItemsControlsEnabled();
+
+        void UpdateItemsControlsEnabled()
+        {
+            bool fieldRandom = itemsFieldRandom.Checked || itemsFieldRandomEven.Checked;
+            itemsFieldBanBad.Enabled = fieldRandom;
+            if (!fieldRandom) itemsFieldBanBad.Checked = false;
+
+            bool shopRandom = itemsShopRandom.Checked;
+            itemsShopBanBad.Enabled = shopRandom;
+            itemsShopBanRegular.Enabled = shopRandom;
+            itemsShopBanOverpowered.Enabled = shopRandom;
+            itemsShopGuaranteeEvolution.Enabled = shopRandom;
+            itemsShopGuaranteeXItems.Enabled = shopRandom;
+            if (!shopRandom)
+            {
+                itemsShopBanBad.Checked = false;
+                itemsShopBanRegular.Checked = false;
+                itemsShopBanOverpowered.Checked = false;
+                itemsShopGuaranteeEvolution.Checked = false;
+                itemsShopGuaranteeXItems.Checked = false;
+            }
+
+            bool pickupRandom = itemsPickupRandom.Checked;
+            itemsPickupBanBad.Enabled = pickupRandom;
+            if (!pickupRandom) itemsPickupBanBad.Checked = false;
         }
 
         void FoeTrainerPokemonModeChanged(object sender, EventArgs e) => UpdateFoeMiddleColumnEnabled();
@@ -534,6 +662,97 @@ namespace NewEditor.Forms
             root.Controls.Add(middle, 1, 0);
             root.Controls.Add(right, 2, 0);
             tabPageWildPokemon.Controls.Add(root);
+        }
+
+        void InitializeMiscTweaksTabUi()
+        {
+            tabPageMiscTweaks.Controls.Clear();
+            tabPageMiscTweaks.Padding = new Padding(8);
+
+            var root = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 3,
+                RowCount = 1,
+                Padding = new Padding(4, 6, 4, 4)
+            };
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333f));
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333f));
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.334f));
+            root.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+
+            var col1 = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true, Margin = new Padding(4, 0, 8, 0) };
+            var col2 = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true, Margin = new Padding(4, 0, 8, 0) };
+            var col3 = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true, Margin = new Padding(4, 0, 4, 0) };
+
+            miscFastestText = NewMiscCheck("Fastest Text");
+            miscNationalDexAtStart = NewMiscCheck("Give National Dex at Start");
+            miscFastEggHatching = NewMiscCheck("Fast Egg Hatching");
+            miscForceChallengeMode = NewMiscCheck("Force Challenge Mode");
+            miscBanLuckyEgg = NewMiscCheck("Ban Lucky Egg");
+            miscNoFreeLuckyEgg = NewMiscCheck("No Free Lucky Egg");
+            miscBanBigMoneyManiacItems = NewMiscCheck("Ban Big Money Maniac Items");
+            miscRunWithoutRunningShoes = NewMiscCheck("Run Without Running Shoes");
+            miscDisableLowHpMusic = NewMiscCheck("Disable Low HP Music");
+            miscForgettableHms = NewMiscCheck("Forgettable HMs");
+            miscBalanceStaticLevels = NewMiscCheck("Balance Static Pokemon Levels");
+            miscRandomizeCatchingTutorial = NewMiscCheck("Randomize Catching Tutorial (not used on Gen5)");
+            miscRandomizePcPotion = NewMiscCheck("Randomize PC Potion (not used on Gen5)");
+
+            col1.Controls.Add(miscFastestText);
+            col1.Controls.Add(miscNationalDexAtStart);
+            col1.Controls.Add(miscFastEggHatching);
+            col1.Controls.Add(miscForceChallengeMode);
+            col2.Controls.Add(miscBanLuckyEgg);
+            col2.Controls.Add(miscNoFreeLuckyEgg);
+            col2.Controls.Add(miscBanBigMoneyManiacItems);
+            col2.Controls.Add(miscBalanceStaticLevels);
+            col3.Controls.Add(miscRunWithoutRunningShoes);
+            col3.Controls.Add(miscDisableLowHpMusic);
+            col3.Controls.Add(miscForgettableHms);
+            col3.Controls.Add(miscRandomizeCatchingTutorial);
+            col3.Controls.Add(miscRandomizePcPotion);
+
+            root.Controls.Add(col1, 0, 0);
+            root.Controls.Add(col2, 1, 0);
+            root.Controls.Add(col3, 2, 0);
+            tabPageMiscTweaks.Controls.Add(root);
+
+            _fvxTips.SetToolTip(miscFastestText, "UPR-FVX parity target. Disabled if the current build has no safe patch route.");
+            _fvxTips.SetToolTip(miscNationalDexAtStart, "UPR-FVX parity target. Disabled if the current build has no safe patch route.");
+            _fvxTips.SetToolTip(miscFastEggHatching, "Sets every species hatch counter to 1.");
+            _fvxTips.SetToolTip(miscForceChallengeMode, "BW2 only.");
+            _fvxTips.SetToolTip(miscNoFreeLuckyEgg, "Replaces Juniper's free Lucky Egg gift(s).");
+            _fvxTips.SetToolTip(miscBalanceStaticLevels, "BW1 only: adjusts fossil static level.");
+            _fvxTips.SetToolTip(miscRandomizeCatchingTutorial, "Shown for parity with UPR-FVX; this tweak is not applied for Gen5 (checkbox stays off).");
+            _fvxTips.SetToolTip(miscRandomizePcPotion, "Shown for parity with UPR-FVX; this tweak is not applied for Gen5 (checkbox stays off).");
+        }
+
+        static CheckBox NewMiscCheck(string text)
+            => new CheckBox { AutoSize = true, Text = text, Margin = new Padding(0, 4, 0, 2) };
+
+        void UpdateMiscTweaksEnabled()
+        {
+            if (miscForceChallengeMode == null) return;
+            bool bw1 = MainEditor.RomType == RomType.BW1;
+            bool bw2 = MainEditor.RomType == RomType.BW2;
+            miscForceChallengeMode.Enabled = bw2;
+            if (!bw2) miscForceChallengeMode.Checked = false;
+            miscBalanceStaticLevels.Enabled = bw1;
+            if (!bw1) miscBalanceStaticLevels.Checked = false;
+
+            bool canFastText = FvxGen5MiscTweaksRunner.CanApplyFastestTextPatch();
+            miscFastestText.Enabled = canFastText;
+            if (!canFastText) miscFastestText.Checked = false;
+
+            bool canNationalDex = FvxGen5MiscTweaksRunner.CanApplyNationalDexPatch();
+            miscNationalDexAtStart.Enabled = canNationalDex;
+            if (!canNationalDex) miscNationalDexAtStart.Checked = false;
+
+            miscRandomizeCatchingTutorial.Enabled = false;
+            miscRandomizePcPotion.Enabled = false;
+            miscRandomizeCatchingTutorial.Checked = false;
+            miscRandomizePcPotion.Checked = false;
         }
 
         void WildRandomizeCheckedChanged(object sender, EventArgs e) => UpdateWildControlsEnabled();

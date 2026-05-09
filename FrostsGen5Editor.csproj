@@ -150,6 +150,7 @@
     <Compile Include="Data\TextHandler.cs" />
     <Compile Include="Data\TypeShuffler.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5Constants.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5RomOffsets.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5TypeSupport.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5RomLayout.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5TypeChart.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveBanList.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5MoveScoring.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxGen5TmHmMoves.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxTutorMoveRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxRandomizerOptions.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxSpeciesMovesetRandomizer.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxTmTutorCompatibilityRandomizer.cs" />
@@ -181,6 +183,12 @@
     <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonOptions.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonPipeline.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxWildPokemonRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxItemsOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxItemsPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxMiscTweaksOptions.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxMiscTweaksPipeline.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MiscTweaksRunner.cs" />
+    <Compile Include="Data\Randomization\FvxGen5\FvxGen5MiscRuntimeState.cs" />
     <Compile Include="Data\Randomization\FvxGen5\Gen5EliteFourFallback.cs" />
     <Compile Include="Data\Randomization\FvxGen5\Gen5GymEliteTypeThemes.cs" />
     <Compile Include="Data\Randomization\FvxGen5\FvxFoeTrainerEnums.cs" />
@@ -309,6 +317,9 @@
     </Compile>
     <Compile Include="Forms\PokemonTraitsControl.Designer.cs">
       <DependentUpon>PokemonTraitsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\TmHmTutorsControl.cs">
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\GeneShuffleControl.cs">
       <SubType>UserControl</SubType>
@@ -443,6 +454,12 @@
       <DependentUpon>TextViewer.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
+    <None Include="Patches\instant_text\*.ips">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Patches\national_dex\*.ips">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Patches\Black1Fairy.Vpatch">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

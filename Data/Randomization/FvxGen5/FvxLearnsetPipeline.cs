@@ -23,15 +23,35 @@ namespace NewEditor.Data.Randomization.FvxGen5
             }
             try
             {
-                FvxSpeciesMovesetRandomizer.RandomizeLevelUp(opt, rnd, tmHm);
-                FvxSpeciesMovesetRandomizer.RandomizeEggMoves(opt, rnd, tmHm);
-                FvxTmTutorCompatibilityRandomizer.RandomizeTmHm(opt, rnd, tmHm);
+                var tmHmFinal = FvxGen5TmHmMoves.BuildRandomizedTmHmMoves(opt, rnd, tmHm, out var tmMoveErr);
+                if (tmHmFinal == null)
+                {
+                    error = "TM/HM move randomization failed: " + (tmMoveErr ?? "");
+                    return false;
+                }
+                if (!FvxGen5TmHmMoves.TryWriteTmHmMoveOrder(MainEditor.fileSystem.arm9, tmHmFinal, out var tmWriteErr))
+                {
+                    error = "TM/HM write failed: " + (tmWriteErr ?? "");
+                    return false;
+                }
+
+                FvxTmTutorCompatibilityRandomizer.RandomizeTmHm(opt, rnd, tmHmFinal);
                 IReadOnlyList<short> tutorIds;
                 if (MainEditor.RomType == RomType.BW2)
                     tutorIds = FvxGen5TmHmMoves.ResolveBw2TutorMoveIds();
                 else
                     tutorIds = Array.Empty<short>();
-                FvxTmTutorCompatibilityRandomizer.RandomizeTutors(opt, rnd, tutorIds);
+
+                var tutorFinal = FvxTutorMoveRandomizer.BuildRandomizedTutorMoves(opt, rnd, tutorIds, tmHmFinal, out var tutorMoveErr);
+                if (tutorFinal == null)
+                {
+                    error = "Tutor move randomization failed: " + (tutorMoveErr ?? "");
+                    return false;
+                }
+                FvxTmTutorCompatibilityRandomizer.RandomizeTutors(opt, rnd, tutorFinal);
+
+                FvxSpeciesMovesetRandomizer.RandomizeLevelUp(opt, rnd, tmHmFinal);
+                FvxSpeciesMovesetRandomizer.RandomizeEggMoves(opt, rnd, tmHmFinal);
                 return true;
             }
             catch (Exception ex)
