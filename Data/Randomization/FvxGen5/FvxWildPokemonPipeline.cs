@@ -18,7 +18,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 error = "No file system loaded.";
                 return false;
             }
-            if (MainEditor.encounterNarc?.encounterPools == null)
+            if (MainEditor.encounterNarc?.mainEncounterPools == null
+                || MainEditor.encounterNarc.mainEncounterPools.Count == 0)
             {
                 error = "Encounter data is not loaded.";
                 return false;

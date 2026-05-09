@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using NewEditor.Data;
@@ -14,6 +15,8 @@ namespace NewEditor.Forms
         bool _syncingFoeEvolve;
         bool _syncingFoeLevel;
         bool _syncingWildLevel;
+        /// <summary>While true, <see cref="UpdateWildControlsEnabled"/> / items / misc skip destructive clears so JSON preset apply order does not clobber loaded values.</summary>
+        bool _applyingJsonPreset;
         readonly ToolTip _fvxTips = new ToolTip();
         CheckBox wildRandomizeCheck;
         GroupBox wildReplacePerSpeciesGroup;
@@ -104,6 +107,7 @@ namespace NewEditor.Forms
             UpdateFoeMiddleColumnEnabled();
             UpdateMiscTweaksEnabled();
             RefreshSettingsRomLabels();
+            UpdateWildTabTooltips();
         }
 
         void FvxRandomizerForm_Shown(object sender, EventArgs e)
@@ -441,7 +445,7 @@ namespace NewEditor.Forms
             return new FvxMiscTweaksOptions
             {
                 FastestText = miscFastestText.Checked,
-                NationalDexAtStart = miscNationalDexAtStart.Checked,
+                NationalDexAtStart = false,
                 FastEggHatching = miscFastEggHatching.Checked,
                 ForceChallengeMode = miscForceChallengeMode.Checked,
                 BanLuckyEgg = miscBanLuckyEgg.Checked,
@@ -471,6 +475,7 @@ namespace NewEditor.Forms
 
         void UpdateItemsControlsEnabled()
         {
+            if (_applyingJsonPreset) return;
             bool fieldRandom = itemsFieldRandom.Checked || itemsFieldRandomEven.Checked;
             itemsFieldBanBad.Enabled = fieldRandom;
             if (!fieldRandom) itemsFieldBanBad.Checked = false;
@@ -536,12 +541,34 @@ namespace NewEditor.Forms
             tabPageWildPokemon.Controls.Clear();
             tabPageWildPokemon.Padding = new Padding(8);
 
+            var outer = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Padding = new Padding(4, 6, 4, 4)
+            };
+            outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            outer.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+
+            var wildInfoLabel = new Label
+            {
+                AutoSize = true,
+                Text = "Species replacement requires checking \"Randomize Wild Pokemon\" below (off by default). "
+                       + "The separate \"Randomize (Gen 5 FVX-style)\" dialog uses its own wild mode; its settings are not applied here. "
+                       + "Always save the ROM after randomizing or changes exist only in memory.",
+                MaximumSize = new Size(920, 0),
+                ForeColor = Color.DimGray,
+                Margin = new Padding(0, 0, 0, 8)
+            };
+            outer.Controls.Add(wildInfoLabel, 0, 0);
+
             var root = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 3,
                 RowCount = 1,
-                Padding = new Padding(4, 6, 4, 4)
+                Padding = new Padding(0)
             };
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333f));
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333f));
@@ -600,6 +627,7 @@ namespace NewEditor.Forms
             middle.Controls.Add(wildEvolutionRestrictionsGroup);
 
             wildUseTimeBased = new CheckBox { AutoSize = true, Text = "Use Time Based Encounters", Checked = true, Margin = new Padding(0, 4, 0, 2) };
+            wildUseTimeBased.CheckedChanged += (_, __) => UpdateWildTabTooltips();
             wildNoLegendaries = new CheckBox { AutoSize = true, Text = "Don't Use Legendaries", Margin = new Padding(0, 2, 0, 2) };
             wildSetMinimumCatchRate = new CheckBox { AutoSize = true, Text = "Set Minimum Catch Rate:", Margin = new Padding(0, 2, 0, 2) };
             wildSetMinimumCatchRate.CheckedChanged += WildMinCatchRateCheckedChanged;
@@ -639,7 +667,31 @@ namespace NewEditor.Forms
             root.Controls.Add(left, 0, 0);
             root.Controls.Add(middle, 1, 0);
             root.Controls.Add(right, 2, 0);
-            tabPageWildPokemon.Controls.Add(root);
+            outer.Controls.Add(root, 0, 1);
+            tabPageWildPokemon.Controls.Add(outer);
+            UpdateWildTabTooltips();
+        }
+
+        void UpdateWildTabTooltips()
+        {
+            if (wildRandomizeCheck == null) return;
+            _fvxTips.SetToolTip(wildRandomizeCheck,
+                "When checked, wild encounter species are replaced using the options below. When unchecked, species stay vanilla "
+                + "(you can still use minimum catch rate, held items, or level modifier).");
+
+            if (wildUseTimeBased == null) return;
+            if (MainEditor.RomType == RomType.BW2)
+            {
+                _fvxTips.SetToolTip(wildUseTimeBased,
+                    wildUseTimeBased.Checked
+                        ? "BW2: spring, summer, autumn, and winter encounter tables are all included when randomizing."
+                        : "BW2: unchecked — only encounter rows with season ≤ 0 are updated; other seasons can stay vanilla. Keep this checked for full coverage.");
+            }
+            else
+            {
+                _fvxTips.SetToolTip(wildUseTimeBased,
+                    "When checked, all encounter variants loaded from the encounter NARC are processed.");
+            }
         }
 
         void InitializeMiscTweaksTabUi()
@@ -693,7 +745,9 @@ namespace NewEditor.Forms
             tabPageMiscTweaks.Controls.Add(root);
 
             _fvxTips.SetToolTip(miscFastestText, "UPR-FVX parity target. Disabled if the current build has no safe patch route.");
-            _fvxTips.SetToolTip(miscNationalDexAtStart, "UPR-FVX parity target. Disabled if the current build has no safe patch route.");
+            _fvxTips.SetToolTip(miscNationalDexAtStart, "Disabled: this patch is known to corrupt ROMs. Ignored when loading presets and when randomizing.");
+            miscNationalDexAtStart.Enabled = false;
+            miscNationalDexAtStart.Checked = false;
             _fvxTips.SetToolTip(miscFastEggHatching, "Sets every species hatch counter to 1.");
             _fvxTips.SetToolTip(miscForceChallengeMode, "BW2 only.");
             _fvxTips.SetToolTip(miscNoFreeLuckyEgg, "Replaces Juniper's free Lucky Egg gift(s).");
@@ -705,6 +759,7 @@ namespace NewEditor.Forms
 
         void UpdateMiscTweaksEnabled()
         {
+            if (_applyingJsonPreset) return;
             if (miscForceChallengeMode == null) return;
             bool bw1 = MainEditor.RomType == RomType.BW1;
             bool bw2 = MainEditor.RomType == RomType.BW2;
@@ -717,9 +772,8 @@ namespace NewEditor.Forms
             miscFastestText.Enabled = canFastText;
             if (!canFastText) miscFastestText.Checked = false;
 
-            bool canNationalDex = FvxGen5MiscTweaksRunner.CanApplyNationalDexPatch();
-            miscNationalDexAtStart.Enabled = canNationalDex;
-            if (!canNationalDex) miscNationalDexAtStart.Checked = false;
+            miscNationalDexAtStart.Enabled = false;
+            miscNationalDexAtStart.Checked = false;
         }
 
         void WildRandomizeCheckedChanged(object sender, EventArgs e) => UpdateWildControlsEnabled();
@@ -734,6 +788,8 @@ namespace NewEditor.Forms
 
         void UpdateWildControlsEnabled()
         {
+            if (_applyingJsonPreset) return;
+            UpdateWildTabTooltips();
             bool randomizeOn = wildRandomizeCheck.Checked;
             wildReplacePerSpeciesGroup.Enabled = randomizeOn;
             wildTypeRestrictionsGroup.Enabled = randomizeOn;

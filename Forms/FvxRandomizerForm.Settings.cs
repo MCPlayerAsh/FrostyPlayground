@@ -289,34 +289,42 @@ namespace NewEditor.Forms
 
         void ApplyConfigToUi(FvxRandomizerConfigFile c)
         {
-            seedNumeric.Value = c.Seed;
-            checkIncludeFairy.Checked = c.IncludeFairyTypes;
-            traitsControl.ApplyFromOptions(c.Traits);
-            int gtm = c.GeneShuffleTypeMode;
-            if (gtm < 0 || gtm > 2) gtm = 0;
-            geneShuffleControl.ApplyLearnsetOptions((GeneShuffleTypeMode)gtm, c.GeneLearn);
-            ApplyStartersOptionsToUi(c.Starters);
-            ApplyWildOptionsToUi(c.Wild);
-            ApplyFoeOptionsToUi(c.Foe);
-            ApplyItemsOptionsToUi(c.Items);
-            ApplyMiscOptionsToUi(c.Misc);
+            _applyingJsonPreset = true;
+            try
+            {
+                seedNumeric.Value = c.Seed;
+                checkIncludeFairy.Checked = c.IncludeFairyTypes;
+                traitsControl.ApplyFromOptions(c.Traits);
+                int gtm = c.GeneShuffleTypeMode;
+                if (gtm < 0 || gtm > 2) gtm = 0;
+                geneShuffleControl.ApplyLearnsetOptions((GeneShuffleTypeMode)gtm, c.GeneLearn);
+                ApplyStartersOptionsToUi(c.Starters);
+                ApplyWildOptionsToUi(c.Wild);
+                ApplyFoeOptionsToUi(c.Foe);
+                ApplyItemsOptionsToUi(c.Items);
+                ApplyMiscOptionsToUi(c.Misc);
 
-            _setLimitPokemon.Checked = c.General.LimitPokemon;
-            _limitSpeciesAllowlist.Clear();
-            if (c.General.AllowedSpecies != null)
-                foreach (var x in c.General.AllowedSpecies) _limitSpeciesAllowlist.Add(x);
-            _setBanIrregular.Checked = c.General.BanIrregularAltFormes;
-            _setBanPremature.Checked = c.General.BanPrematureEvos;
-            _setRandomizeIntro.Checked = c.General.RandomizeIntroMon;
-            _setRaceMode.Checked = c.General.RaceMode;
+                _setLimitPokemon.Checked = c.General.LimitPokemon;
+                _limitSpeciesAllowlist.Clear();
+                if (c.General.AllowedSpecies != null)
+                    foreach (var x in c.General.AllowedSpecies) _limitSpeciesAllowlist.Add(x);
+                _setBanIrregular.Checked = c.General.BanIrregularAltFormes;
+                _setBanPremature.Checked = c.General.BanPrematureEvos;
+                _setRandomizeIntro.Checked = c.General.RandomizeIntroMon;
+                _setRaceMode.Checked = c.General.RaceMode;
 
-            _batchEnabled.Checked = c.Batch.Enabled;
-            _batchCount.Value = Math.Max(_batchCount.Minimum, Math.Min(_batchCount.Maximum, c.Batch.Count));
-            _batchStartIndex.Value = Math.Max(_batchStartIndex.Minimum, Math.Min(_batchStartIndex.Maximum, c.Batch.StartingIndex));
-            _batchPrefix.Text = c.Batch.FileNamePrefix ?? "";
-            _batchOutDir.Text = c.Batch.OutputDirectory ?? "";
-            _batchLogs.Checked = c.Batch.GenerateLogs;
-            _batchAdvanceIndex.Checked = c.Batch.AutoAdvanceStartingIndex;
+                _batchEnabled.Checked = c.Batch.Enabled;
+                _batchCount.Value = Math.Max(_batchCount.Minimum, Math.Min(_batchCount.Maximum, c.Batch.Count));
+                _batchStartIndex.Value = Math.Max(_batchStartIndex.Minimum, Math.Min(_batchStartIndex.Maximum, c.Batch.StartingIndex));
+                _batchPrefix.Text = c.Batch.FileNamePrefix ?? "";
+                _batchOutDir.Text = c.Batch.OutputDirectory ?? "";
+                _batchLogs.Checked = c.Batch.GenerateLogs;
+                _batchAdvanceIndex.Checked = c.Batch.AutoAdvanceStartingIndex;
+            }
+            finally
+            {
+                _applyingJsonPreset = false;
+            }
 
             RefreshUiAfterSettingsPresetApplied();
         }
@@ -381,20 +389,31 @@ namespace NewEditor.Forms
 
         void ApplyWildOptionsToUi(FvxWildPokemonOptions o)
         {
-            wildRandomizeCheck.Checked = o.RandomizeWildPokemon;
-            wildReplaceWholeGame.Checked = o.ReplacementMode == FvxWildReplacementMode.WholeGame;
-            wildReplacePerArea.Checked = o.ReplacementMode == FvxWildReplacementMode.NamedLocation;
-            wildReplacePerMap.Checked = o.ReplacementMode == FvxWildReplacementMode.PerMap;
-            wildReplacePerEncounterSet.Checked = o.ReplacementMode == FvxWildReplacementMode.PerEncounterSet;
-            wildReplaceMaximum.Checked = o.ReplacementMode == FvxWildReplacementMode.MaximumPossible;
+            if (o == null) o = new FvxWildPokemonOptions();
+
+            var replaceMode = Enum.IsDefined(typeof(FvxWildReplacementMode), o.ReplacementMode)
+                ? o.ReplacementMode
+                : FvxWildReplacementMode.WholeGame;
+            var typeMode = Enum.IsDefined(typeof(FvxWildTypeRestrictionMode), o.TypeRestrictionMode)
+                ? o.TypeRestrictionMode
+                : FvxWildTypeRestrictionMode.None;
+            var evoMode = Enum.IsDefined(typeof(FvxWildEvolutionRestrictionMode), o.EvolutionRestrictionMode)
+                ? o.EvolutionRestrictionMode
+                : FvxWildEvolutionRestrictionMode.None;
+
+            wildReplaceWholeGame.Checked = replaceMode == FvxWildReplacementMode.WholeGame;
+            wildReplacePerArea.Checked = replaceMode == FvxWildReplacementMode.NamedLocation;
+            wildReplacePerMap.Checked = replaceMode == FvxWildReplacementMode.PerMap;
+            wildReplacePerEncounterSet.Checked = replaceMode == FvxWildReplacementMode.PerEncounterSet;
+            wildReplaceMaximum.Checked = replaceMode == FvxWildReplacementMode.MaximumPossible;
             wildSplitByEncounterType.Checked = o.SplitByEncounterType;
-            wildTypeNone.Checked = o.TypeRestrictionMode == FvxWildTypeRestrictionMode.None;
-            wildTypeRandomThemes.Checked = o.TypeRestrictionMode == FvxWildTypeRestrictionMode.RandomZoneThemes;
-            wildTypeKeepPrimary.Checked = o.TypeRestrictionMode == FvxWildTypeRestrictionMode.KeepPrimaryType;
+            wildTypeNone.Checked = typeMode == FvxWildTypeRestrictionMode.None;
+            wildTypeRandomThemes.Checked = typeMode == FvxWildTypeRestrictionMode.RandomZoneThemes;
+            wildTypeKeepPrimary.Checked = typeMode == FvxWildTypeRestrictionMode.KeepPrimaryType;
             wildTypeKeepThemes.Checked = o.KeepZoneTypeThemes;
-            wildEvoNone.Checked = o.EvolutionRestrictionMode == FvxWildEvolutionRestrictionMode.None;
-            wildEvoBasicOnly.Checked = o.EvolutionRestrictionMode == FvxWildEvolutionRestrictionMode.BasicOnly;
-            wildEvoSameStage.Checked = o.EvolutionRestrictionMode == FvxWildEvolutionRestrictionMode.SameEvolutionStage;
+            wildEvoNone.Checked = evoMode == FvxWildEvolutionRestrictionMode.None;
+            wildEvoBasicOnly.Checked = evoMode == FvxWildEvolutionRestrictionMode.BasicOnly;
+            wildEvoSameStage.Checked = evoMode == FvxWildEvolutionRestrictionMode.SameEvolutionStage;
             wildEvoKeepRelations.Checked = o.KeepEvolutionRelations;
             wildUseTimeBased.Checked = o.UseTimeBasedEncounters;
             wildNoLegendaries.Checked = o.DontUseLegendaries;
@@ -408,6 +427,9 @@ namespace NewEditor.Forms
             wildAllowAltFormes.Checked = o.AllowAlternateFormes;
             wildLevelModifierEnabled.Checked = o.LevelModifierEnabled;
             wildLevelModifierTrack.Value = Math.Max(wildLevelModifierTrack.Minimum, Math.Min(wildLevelModifierTrack.Maximum, o.LevelModifierPercent));
+
+            // Apply last: toggling this runs UpdateWildControlsEnabled, which must see final values for dependent controls (held items, similar strength, etc.).
+            wildRandomizeCheck.Checked = o.RandomizeWildPokemon;
         }
 
         void ApplyFoeOptionsToUi(FvxFoePokemonOptions o)
@@ -489,7 +511,7 @@ namespace NewEditor.Forms
         {
             if (miscFastestText == null) return;
             miscFastestText.Checked = o.FastestText;
-            miscNationalDexAtStart.Checked = o.NationalDexAtStart;
+            miscNationalDexAtStart.Checked = false;
             miscFastEggHatching.Checked = o.FastEggHatching;
             miscForceChallengeMode.Checked = o.ForceChallengeMode;
             miscBanLuckyEgg.Checked = o.BanLuckyEgg;
@@ -604,6 +626,17 @@ namespace NewEditor.Forms
             {
                 error = "Intro: no species left after global filters.";
                 return false;
+            }
+            if (evo != null && evo.Count > 0)
+            {
+                var graph = FvxGen5EvolutionGraph.FromEvolutions(evo);
+                var incoming = graph.ComputeIncoming();
+                pool = pool.Where(i => i > 0 && i < incoming.Length && graph.IsBasic(i, incoming)).ToList();
+                if (pool.Count == 0)
+                {
+                    error = "Intro: no unevolved (basic) species left for the intro cutscene; turn off Randomize intro Pokémon or widen filters.";
+                    return false;
+                }
             }
             int species = pool[rnd.Next(pool.Count)];
             return FvxIntroMonRunner.TryApply(species, out error);

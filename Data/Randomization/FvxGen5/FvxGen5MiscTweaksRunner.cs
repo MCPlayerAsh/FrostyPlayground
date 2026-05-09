@@ -74,6 +74,9 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 opt.FastestText = false;
             if (!CanApplyNationalDexPatch())
                 opt.NationalDexAtStart = false;
+
+            // National Dex at start is hard-disabled (known-broken); Forgettable HMs re-enabled.
+            opt.NationalDexAtStart = false;
         }
 
         static List<MiscAction> BuildActions(FvxMiscTweaksOptions opt)

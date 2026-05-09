@@ -30,6 +30,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 ? BLZDecoder.BLZ_EncodePub(buf, true)
                 : buf);
 
+            SyncY9EntryForOverlay(overlayIndex, fs.overlays[overlayIndex], compressed);
             return true;
         }
 
@@ -65,7 +66,28 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 ? BLZDecoder.BLZ_EncodePub(buf, true)
                 : buf);
 
+            SyncY9EntryForOverlay(overlayIndex, fs.overlays[overlayIndex], compressed);
             return true;
+        }
+
+        /// <summary>
+        /// After BLZ recompression the file size often changes; if y9.compressedSize is stale the loader reads the wrong
+        /// number of bytes and can hang on a white screen. Matches <see cref="FvxGen5StarterAssetPatcher"/> cry overlay handling.
+        /// </summary>
+        static void SyncY9EntryForOverlay(int overlayIndex, List<byte> newBytes, bool wasCompressed)
+        {
+            var fs = MainEditor.fileSystem;
+            if (fs?.y9?.entries == null || overlayIndex < 0 || overlayIndex >= fs.y9.entries.Count || newBytes == null)
+                return;
+            var e = fs.y9.entries[overlayIndex];
+            if (wasCompressed)
+            {
+                e.compressed = true;
+                e.compressedSize = newBytes.Count;
+            }
+            else
+                e.mountSize = newBytes.Count;
+            e.Apply();
         }
     }
 }

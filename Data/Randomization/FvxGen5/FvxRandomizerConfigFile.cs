@@ -76,6 +76,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
             if (c.Foe == null) c.Foe = new FvxFoePokemonOptions();
             if (c.Items == null) c.Items = new FvxItemsOptions();
             if (c.Misc == null) c.Misc = new FvxMiscTweaksOptions();
+            c.Misc.NationalDexAtStart = false;
             if (c.General == null) c.General = new FvxRandomizerSettingsGeneral();
             if (c.Batch == null) c.Batch = new FvxRandomizerBatchSettings();
         }
