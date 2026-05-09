@@ -18,5 +18,17 @@ namespace NewEditor.Data.Randomization.FvxGen5
 
         public const int CutMoveId = 15;
         public const int StruggleMoveId = 165;
+
+        /// <summary>Gen 5 Metronome move ID.</summary>
+        public const int MetronomeMoveId = 118;
+
+        /// <summary>UPR Gen5Constants.pickupTableLocator hex "19005C00DD00".</summary>
+        public static readonly byte[] PickupTableLocatorBytes = { 0x19, 0x00, 0x5C, 0x00, 0xDD, 0x00 };
+
+        public const int Bw2MoveTutorCount = 60;
+        public const int Bw2MoveTutorBytesPerEntry = 12;
+        public const int NumberOfPickupItems = 29;
+
+        public const int MoveTutorBw2OverlayId = 36;
     }
 }

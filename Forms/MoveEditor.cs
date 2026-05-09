@@ -1,4 +1,4 @@
-﻿using NewEditor.Data;
+using NewEditor.Data;
 using NewEditor.Data.NARCTypes;
 using NewEditor.Data.Randomization.GeneShuffle;
 using System;

@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
+using NewEditor.Data.Randomization.FvxGen5;
 using NewEditor.Data.NARCTypes;
 using System.Threading;
 using System.Runtime.InteropServices;

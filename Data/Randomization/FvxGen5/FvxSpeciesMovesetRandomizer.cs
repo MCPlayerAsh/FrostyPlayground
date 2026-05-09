@@ -27,6 +27,27 @@ namespace NewEditor.Data.Randomization.FvxGen5
             var moves = MainEditor.moveDataNarc.moves;
             var pokemon = MainEditor.pokemonDataNarc.pokemon;
             var learnsets = MainEditor.learnsetNarc.learnsets;
+
+            if (opt.MovesetsMod == FvxMovesetsMod.MetronomeOnly)
+            {
+                int met = FvxGen5Constants.MetronomeMoveId;
+                if (met < 0 || met >= moves.Count) return;
+                int nMet = Math.Min(pokemon.Count, learnsets.Count);
+                for (int pkmnNum = 0; pkmnNum < nMet; pkmnNum++)
+                {
+                    var pk = pokemon[pkmnNum];
+                    var ls = learnsets[pkmnNum];
+                    if (ls?.moves == null) continue;
+                    var movesList = new List<LevelUpMoveSlot>(ls.moves);
+                    for (int i = 0; i < movesList.Count; i++)
+                        movesList[i] = new LevelUpMoveSlot((short)met, movesList[i].level);
+                    ls.moves = movesList;
+                    ls.ApplyData();
+                    pk.levelUpMoves = ls;
+                }
+                return;
+            }
+
             bool typeThemed = opt.MovesetsMod == FvxMovesetsMod.RandomPreferSameType;
             bool noBroken = opt.BlockBrokenMovesetMoves;
             bool forceStarting = MainEditor.RomType != RomType.HGSS && opt.StartWithGuaranteedMoves;
