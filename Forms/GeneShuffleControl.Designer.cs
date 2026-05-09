@@ -17,6 +17,7 @@ namespace NewEditor.Forms
         System.Windows.Forms.CheckBox blockBrokenMovesCheck;
         System.Windows.Forms.CheckBox guaranteedStartCheck;
         System.Windows.Forms.NumericUpDown guaranteedCountNumeric;
+        System.Windows.Forms.CheckBox reorderDamagingCheck;
         System.Windows.Forms.CheckBox forceGoodDamagingCheck;
         System.Windows.Forms.NumericUpDown goodDamagingPercentNumeric;
         System.Windows.Forms.CheckBox evoMoveAllCheck;
@@ -51,6 +52,7 @@ namespace NewEditor.Forms
             blockBrokenMovesCheck = new System.Windows.Forms.CheckBox();
             guaranteedStartCheck = new System.Windows.Forms.CheckBox();
             guaranteedCountNumeric = new System.Windows.Forms.NumericUpDown();
+            reorderDamagingCheck = new System.Windows.Forms.CheckBox();
             forceGoodDamagingCheck = new System.Windows.Forms.CheckBox();
             goodDamagingPercentNumeric = new System.Windows.Forms.NumericUpDown();
             evoMoveAllCheck = new System.Windows.Forms.CheckBox();
@@ -108,7 +110,7 @@ namespace NewEditor.Forms
             movesetModCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             movesetModCombo.Location = new System.Drawing.Point(10, 24);
             movesetModCombo.Size = new System.Drawing.Size(390, 24);
-            movesetModCombo.Items.AddRange(new object[] { "Unchanged", "Completely random", "Random (prefer same type)" });
+            movesetModCombo.Items.AddRange(new object[] { "Unchanged", "Completely random", "Random (prefer same type)", "Metronome only mode" });
             movesetModCombo.SelectedIndex = 1;
 
             blockBrokenMovesCheck.Text = "Block broken moves (SonicBoom / Dragon Rage)";
@@ -137,12 +139,16 @@ namespace NewEditor.Forms
             goodDamagingPercentNumeric.Maximum = 100;
             goodDamagingPercentNumeric.Value = 50;
 
+            reorderDamagingCheck.Text = "Reorder damaging moves";
+            reorderDamagingCheck.Location = new System.Drawing.Point(10, 132);
+            reorderDamagingCheck.AutoSize = true;
+
             evoMoveAllCheck.Text = "Evolution moves for all (slot at level 0)";
-            evoMoveAllCheck.Location = new System.Drawing.Point(10, 132);
+            evoMoveAllCheck.Location = new System.Drawing.Point(10, 158);
             evoMoveAllCheck.AutoSize = true;
 
             randomizeEggCheck.Text = "Randomize egg moves (same rules as learnsets)";
-            randomizeEggCheck.Location = new System.Drawing.Point(10, 158);
+            randomizeEggCheck.Location = new System.Drawing.Point(10, 184);
             randomizeEggCheck.AutoSize = true;
             randomizeEggCheck.Checked = true;
 
@@ -152,6 +158,7 @@ namespace NewEditor.Forms
             movesetGroup.Controls.Add(guaranteedCountNumeric);
             movesetGroup.Controls.Add(forceGoodDamagingCheck);
             movesetGroup.Controls.Add(goodDamagingPercentNumeric);
+            movesetGroup.Controls.Add(reorderDamagingCheck);
             movesetGroup.Controls.Add(evoMoveAllCheck);
             movesetGroup.Controls.Add(randomizeEggCheck);
 

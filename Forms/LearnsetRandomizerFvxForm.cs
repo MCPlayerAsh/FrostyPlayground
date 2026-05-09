@@ -40,6 +40,7 @@ namespace NewEditor.Forms
                 BlockBrokenMovesetMoves = blockBrokenMovesCheck.Checked,
                 StartWithGuaranteedMoves = guaranteedStartCheck.Checked,
                 GuaranteedMoveCount = (int)guaranteedCountNumeric.Value,
+                ReorderDamagingMoves = reorderDamagingCheck.Checked,
                 MovesetsForceGoodDamaging = forceGoodDamagingCheck.Checked,
                 MovesetsGoodDamagingPercent = (int)goodDamagingPercentNumeric.Value,
                 EvolutionMovesForAll = evoMoveAllCheck.Checked,

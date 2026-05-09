@@ -4,7 +4,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
     {
         Unchanged,
         CompletelyRandom,
-        RandomPreferSameType
+        RandomPreferSameType,
+        MetronomeOnlyMode
     }
 
     public enum FvxTmHmCompatMod
@@ -28,6 +29,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public bool BlockBrokenMovesetMoves { get; set; }
         public bool StartWithGuaranteedMoves { get; set; }
         public int GuaranteedMoveCount { get; set; } = 4;
+        public bool ReorderDamagingMoves { get; set; }
         public bool MovesetsForceGoodDamaging { get; set; }
         public int MovesetsGoodDamagingPercent { get; set; } = 50;
         public bool EvolutionMovesForAll { get; set; }
