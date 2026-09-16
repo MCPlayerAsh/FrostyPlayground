@@ -2,7 +2,7 @@
 
 ```
 ==========================================================================================================================================
-I have bastardized this program beyond recognition. Curse my lack of care and my unprofessionalism on why I won't write an updated ReadMe;
+Neo is the branch I have created in my attempt to pick up this project I'd left incomplete, and hopefully to present to the world as "a neat lil thing"
 ==========================================================================================================================================
 ```
 
