@@ -549,6 +549,7 @@ namespace NewEditor.Forms
             checkStarterGraphics.Location = new System.Drawing.Point(4, 132);
             checkStarterGraphics.Text = "Update starter graphics && cries (experimental)";
             checkStarterGraphics.TabIndex = 32;
+            checkStarterGraphics.Checked = true;
             starterColExtra.Controls.Add(checkNoLegendaries);
             starterColExtra.Controls.Add(checkBstMin);
             starterColExtra.Controls.Add(numericBstMin);

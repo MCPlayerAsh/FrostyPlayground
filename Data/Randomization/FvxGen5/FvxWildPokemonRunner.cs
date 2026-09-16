@@ -20,7 +20,13 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     RandomizeWildHeldItems(opt, pokemon, rnd);
 
                 if (opt.RandomizeWildPokemon || opt.LevelModifierEnabled)
-                    RandomizeEncounters(opt, pokemon, MainEditor.encounterNarc.encounterPools, rnd);
+                {
+                    if (!RandomizeEncounters(opt, pokemon, MainEditor.encounterNarc.encounterPools, rnd, out var encErr))
+                    {
+                        error = encErr;
+                        return false;
+                    }
+                }
 
                 return true;
             }
@@ -116,15 +122,20 @@ namespace NewEditor.Data.Randomization.FvxGen5
                    || s.Contains("fossil");
         }
 
-        static void RandomizeEncounters(FvxWildPokemonOptions opt, List<PokemonEntry> pokemon, List<EncounterEntry> allEntries, Random rnd)
+        static bool RandomizeEncounters(FvxWildPokemonOptions opt, List<PokemonEntry> pokemon, List<EncounterEntry> allEntries, Random rnd, out string error)
         {
+            error = null;
             var entries = allEntries
                 .Where(e => opt.UseTimeBasedEncounters || e.season <= 0)
                 .ToList();
-            if (entries.Count == 0) return;
+            if (entries.Count == 0) return true;
 
             var basePool = BuildSpeciesPool(pokemon, opt);
-            if (basePool.Count == 0) return;
+            if (opt.RandomizeWildPokemon && basePool.Count == 0)
+            {
+                error = "No species available for wild encounters (check Limit Pokémon or other filters).";
+                return false;
+            }
 
             var encounterTypes = new List<(EncounterEntry entry, bool land, int slotType)>();
             foreach (var entry in entries)
@@ -174,8 +185,17 @@ namespace NewEditor.Data.Randomization.FvxGen5
                     slot.pokemonID = (short)replacement;
                     slot.pokemonForm = PickFormForSpecies(pokemon[replacement], opt.AllowAlternateFormes, rnd);
                 }
-                t.entry.ApplyData();
+
+                t.entry.EncounterSlotsToGroups();
+                if (!t.entry.ApplyData())
+                {
+                    t.entry.ReadData();
+                    error = "Wild encounter data could not be saved for one or more routes (rate validation failed).";
+                    return false;
+                }
             }
+
+            return true;
         }
 
         static Queue<int> BuildCatchEmAllQueue(FvxWildPokemonOptions opt, List<int> basePool, Random rnd)

@@ -199,12 +199,25 @@ namespace NewEditor.Forms
 
         void BuildWildContent(Panel p)
         {
-            var gb = new GroupBox { Text = "Wild encounters", Location = new Point(8, 8), Size = new Size(820, 100) };
-            wildModeCombo = AddLabeledCombo(gb, "Mode:", 10, 22, new[] { "Unchanged", "Random completely", "Random (themes — stub)" }, 260);
+            var gb = new GroupBox { Text = "Wild encounters", Location = new Point(8, 8), Size = new Size(820, 134) };
+            wildModeCombo = AddLabeledCombo(gb, "Mode:", 10, 22,
+                new[]
+                {
+                    "Unchanged",
+                    "Random completely",
+                    "Random completely (type zone themes not implemented — same as random)"
+                }, 520);
             wildNoLegend = AddCheck(gb, "Don't use legendaries", 10, 52);
             wildLevelMod = AddCheck(gb, "Level modifier %", 220, 52);
             wildLevelPct = new NumericUpDown { Location = new Point(380, 48), Minimum = -100, Maximum = 150, Value = 0, Width = 55 };
             gb.Controls.Add(wildLevelPct);
+            gb.Controls.Add(new Label
+            {
+                Text = "This dialog edits encounters in memory only — save the ROM afterward. The full Randomizer window’s Wild Pokémon tab is separate; use one flow per session.",
+                Location = new Point(10, 84),
+                Size = new Size(800, 36),
+                ForeColor = Color.DimGray
+            });
             p.Controls.Add(gb);
         }
 
@@ -246,6 +259,8 @@ namespace NewEditor.Forms
             miscFastEgg = AddCheck(gb, "Fast egg hatch", 340, 22);
             miscChallenge = AddCheck(gb, "Force Challenge Mode", 480, 22);
             miscForgetHm = AddCheck(gb, "Forgettable HMs", 10, 48);
+            miscNatDex.Enabled = false;
+            miscNatDex.Checked = false;
             p.Controls.Add(gb);
         }
 
@@ -324,10 +339,11 @@ namespace NewEditor.Forms
             pickupCombo.SelectedIndex = Math.Min(pickupCombo.Items.Count - 1, (int)_settings.Items.Pickup);
 
             miscFastText.Checked = _settings.Misc.FastestText;
-            miscNatDex.Checked = _settings.Misc.GiveNationalDexAtStart;
+            miscNatDex.Checked = false;
             miscFastEgg.Checked = _settings.Misc.FastEggHatching;
             miscChallenge.Checked = _settings.Misc.ForceChallengeMode;
             miscForgetHm.Checked = _settings.Misc.ForgettableHms;
+            _settings.Misc.GiveNationalDexAtStart = false;
         }
 
         void ClampSeedToNumeric()
@@ -397,7 +413,7 @@ namespace NewEditor.Forms
             _settings.Items.Pickup = (FvxPickupMode)pickupCombo.SelectedIndex;
 
             _settings.Misc.FastestText = miscFastText.Checked;
-            _settings.Misc.GiveNationalDexAtStart = miscNatDex.Checked;
+            _settings.Misc.GiveNationalDexAtStart = false;
             _settings.Misc.FastEggHatching = miscFastEgg.Checked;
             _settings.Misc.ForceChallengeMode = miscChallenge.Checked;
             _settings.Misc.ForgettableHms = miscForgetHm.Checked;

@@ -54,7 +54,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 foreach (var arr in pool.waterSlots) DoSlots(arr);
 
             pool.EncounterSlotsToGroups();
-            pool.ApplyData();
+            if (!pool.ApplyData())
+                pool.ReadData();
         }
 
         static int PickSpecies(FvxWildPokemonSettings wild, Random rnd, int maxSpecies, List<PokemonEntry> pkData)

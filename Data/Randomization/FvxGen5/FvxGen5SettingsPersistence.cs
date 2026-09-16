@@ -29,7 +29,10 @@ namespace NewEditor.Data.Randomization.FvxGen5
             string json = File.ReadAllText(path);
             try
             {
-                return JsonSerializer.Deserialize<FvxGen5FullSettings>(json, JsonOpts) ?? new FvxGen5FullSettings();
+                var s = JsonSerializer.Deserialize<FvxGen5FullSettings>(json, JsonOpts) ?? new FvxGen5FullSettings();
+                if (s.Misc == null) s.Misc = new FvxMiscTweaksSettings();
+                s.Misc.GiveNationalDexAtStart = false;
+                return s;
             }
             catch
             {

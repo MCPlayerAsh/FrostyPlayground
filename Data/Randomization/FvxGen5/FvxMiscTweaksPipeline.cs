@@ -13,6 +13,8 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 return false;
             }
 
+            opt.NationalDexAtStart = false;
+
             FvxGen5MiscRuntimeState.Reset();
             if (!opt.AnySelected)
                 return true;

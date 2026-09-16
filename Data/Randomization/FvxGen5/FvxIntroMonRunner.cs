@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using NewEditor.Data;
 using NewEditor.Forms;
 
@@ -37,73 +36,67 @@ namespace NewEditor.Data.Randomization.FvxGen5
                 return false;
             }
 
-            var introGraphic = overlays[graphicOvl];
-            int gOff = FindBytes(introGraphic, IntroGraphicPrefix);
-            if (gOff < 0)
+            // Overlays are often BLZ-compressed in ROM; search/patch must run on decoded bytes (see FvxGen5OverlayIo).
+            if (!FvxGen5OverlayIo.TryMutateOverlay(graphicOvl, buf =>
             {
-                error = "Could not locate intro graphic patch point.";
+                int gOff = FindBytes(buf, IntroGraphicPrefix);
+                if (gOff < 0) return "Could not locate intro graphic patch point.";
+                WriteLe16(buf, gOff + IntroGraphicPrefix.Length, nationalSpeciesId);
+                return null;
+            }, out error))
                 return false;
-            }
 
-            int wordOff = gOff + IntroGraphicPrefix.Length;
-            WriteLe16(introGraphic, wordOff, nationalSpeciesId);
-
-            var introCry = overlays[cryOvl];
-            if (bw2)
+            if (!FvxGen5OverlayIo.TryMutateOverlay(cryOvl, buf =>
             {
-                int cOff = FindBytes(introCry, Bw2IntroCryLocator);
-                if (cOff < 0)
+                if (bw2)
                 {
-                    error = "Could not locate BW2 intro cry patch point.";
-                    return false;
+                    int cOff = FindBytes(buf, Bw2IntroCryLocator);
+                    if (cOff < 0) return "Could not locate BW2 intro cry patch point.";
+                    WriteLe16(buf, cOff, nationalSpeciesId);
                 }
-                WriteLe16(introCry, cOff, nationalSpeciesId);
-            }
-            else
-            {
-                int cOff = FindBytes(introCry, Bw1IntroCryPrefix);
-                if (cOff < 0)
+                else
                 {
-                    error = "Could not locate BW1 intro cry patch point.";
-                    return false;
+                    int cOff = FindBytes(buf, Bw1IntroCryPrefix);
+                    if (cOff < 0) return "Could not locate BW1 intro cry patch point.";
+                    ApplyBw1IntroCryRewrite(buf, cOff + Bw1IntroCryPrefix.Length, nationalSpeciesId);
                 }
-                cOff += Bw1IntroCryPrefix.Length;
-                ApplyBw1IntroCryRewrite(introCry, cOff, nationalSpeciesId);
-            }
+                return null;
+            }, out error))
+                return false;
 
             return true;
         }
 
         /// <summary>Matches UPR's block move + pc-relative species constant for BW1 intro cry overlay.</summary>
-        static void ApplyBw1IntroCryRewrite(List<byte> introCry, int offset, int species)
+        static void ApplyBw1IntroCryRewrite(byte[] introCry, int offset, int species)
         {
-            for (int i = offset + 6; i < offset + 40 && i < introCry.Count; i++)
+            for (int i = offset + 6; i < offset + 40 && i < introCry.Length; i++)
                 introCry[i - 2] = introCry[i];
 
-            if (offset + 10 < introCry.Count)
+            if (offset + 10 < introCry.Length)
                 introCry[offset + 10]++;
 
-            if (offset + 38 + 4 <= introCry.Count)
+            if (offset + 38 + 4 <= introCry.Length)
                 HelperFunctions.WriteInt(introCry, offset + 38, species);
 
-            if (offset + 1 < introCry.Count)
+            if (offset + 1 < introCry.Length)
             {
                 introCry[offset] = 0x09;
                 introCry[offset + 1] = 0x48;
             }
         }
 
-        static void WriteLe16(List<byte> buf, int offset, int value)
+        static void WriteLe16(byte[] buf, int offset, int value)
         {
-            if (offset + 1 >= buf.Count) return;
+            if (offset < 0 || offset + 1 >= buf.Length) return;
             buf[offset] = (byte)(value & 0xFF);
             buf[offset + 1] = (byte)((value >> 8) & 0xFF);
         }
 
-        static int FindBytes(IReadOnlyList<byte> data, byte[] pat)
+        static int FindBytes(byte[] data, byte[] pat)
         {
             if (data == null || pat == null || pat.Length == 0) return -1;
-            for (int i = 0; i <= data.Count - pat.Length; i++)
+            for (int i = 0; i <= data.Length - pat.Length; i++)
             {
                 bool ok = true;
                 for (int j = 0; j < pat.Length; j++)

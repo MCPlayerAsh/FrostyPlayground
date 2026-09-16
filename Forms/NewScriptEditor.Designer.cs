@@ -1,4 +1,4 @@
-﻿
+
 namespace NewEditor.Forms
 {
     partial class NewScriptEditor
@@ -49,6 +49,10 @@ namespace NewEditor.Forms
             this.statusText = new System.Windows.Forms.Label();
             this.commandNameSelection3 = new System.Windows.Forms.RadioButton();
             this.genCommandDatabaseButton = new System.Windows.Forms.Button();
+            this.exportAllScriptsButton = new System.Windows.Forms.Button();
+            this.importAllScriptsButton = new System.Windows.Forms.Button();
+            this.exportAllRawDataButton = new System.Windows.Forms.Button();
+            this.importAllRawDataButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.byteNumberBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -67,7 +71,7 @@ namespace NewEditor.Forms
             // rawDataTextBox
             // 
             this.rawDataTextBox.Enabled = false;
-            this.rawDataTextBox.Location = new System.Drawing.Point(152, 369);
+            this.rawDataTextBox.Location = new System.Drawing.Point(152, 454);
             this.rawDataTextBox.Name = "rawDataTextBox";
             this.rawDataTextBox.Size = new System.Drawing.Size(380, 140);
             this.rawDataTextBox.TabIndex = 89;
@@ -77,7 +81,7 @@ namespace NewEditor.Forms
             // applyRawDataButton
             // 
             this.applyRawDataButton.Enabled = false;
-            this.applyRawDataButton.Location = new System.Drawing.Point(12, 469);
+            this.applyRawDataButton.Location = new System.Drawing.Point(12, 554);
             this.applyRawDataButton.Name = "applyRawDataButton";
             this.applyRawDataButton.Size = new System.Drawing.Size(120, 40);
             this.applyRawDataButton.TabIndex = 90;
@@ -87,7 +91,7 @@ namespace NewEditor.Forms
             // 
             // byteNumberBox
             // 
-            this.byteNumberBox.Location = new System.Drawing.Point(454, 341);
+            this.byteNumberBox.Location = new System.Drawing.Point(454, 426);
             this.byteNumberBox.Maximum = new decimal(new int[] {
             999999,
             0,
@@ -101,7 +105,7 @@ namespace NewEditor.Forms
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(367, 343);
+            this.label3.Location = new System.Drawing.Point(367, 428);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(81, 16);
             this.label3.TabIndex = 94;
@@ -128,6 +132,26 @@ namespace NewEditor.Forms
             this.exportScriptFileButton.Text = "Export Script File";
             this.exportScriptFileButton.UseVisualStyleBackColor = true;
             this.exportScriptFileButton.Click += new System.EventHandler(this.ExportScriptFile);
+            // 
+            // exportAllScriptsButton
+            // 
+            this.exportAllScriptsButton.Location = new System.Drawing.Point(14, 310);
+            this.exportAllScriptsButton.Name = "exportAllScriptsButton";
+            this.exportAllScriptsButton.Size = new System.Drawing.Size(120, 40);
+            this.exportAllScriptsButton.TabIndex = 110;
+            this.exportAllScriptsButton.Text = "Export All Scripts";
+            this.exportAllScriptsButton.UseVisualStyleBackColor = true;
+            this.exportAllScriptsButton.Click += new System.EventHandler(this.exportAllScriptsButton_Click);
+            // 
+            // importAllScriptsButton
+            // 
+            this.importAllScriptsButton.Location = new System.Drawing.Point(14, 355);
+            this.importAllScriptsButton.Name = "importAllScriptsButton";
+            this.importAllScriptsButton.Size = new System.Drawing.Size(120, 40);
+            this.importAllScriptsButton.TabIndex = 111;
+            this.importAllScriptsButton.Text = "Import All Scripts";
+            this.importAllScriptsButton.UseVisualStyleBackColor = true;
+            this.importAllScriptsButton.Click += new System.EventHandler(this.importAllScriptsButton_Click);
             // 
             // setupQuickBuildButton
             // 
@@ -213,7 +237,7 @@ namespace NewEditor.Forms
             "66",
             "67",
             "68"});
-            this.loadedOverlayDropdown.Location = new System.Drawing.Point(14, 315);
+            this.loadedOverlayDropdown.Location = new System.Drawing.Point(14, 400);
             this.loadedOverlayDropdown.Margin = new System.Windows.Forms.Padding(3, 5, 3, 5);
             this.loadedOverlayDropdown.Name = "loadedOverlayDropdown";
             this.loadedOverlayDropdown.Size = new System.Drawing.Size(120, 24);
@@ -222,7 +246,7 @@ namespace NewEditor.Forms
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(140, 319);
+            this.label2.Location = new System.Drawing.Point(140, 404);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(96, 16);
             this.label2.TabIndex = 104;
@@ -231,7 +255,7 @@ namespace NewEditor.Forms
             // exportRawDataButton
             // 
             this.exportRawDataButton.Enabled = false;
-            this.exportRawDataButton.Location = new System.Drawing.Point(12, 420);
+            this.exportRawDataButton.Location = new System.Drawing.Point(12, 505);
             this.exportRawDataButton.Name = "exportRawDataButton";
             this.exportRawDataButton.Size = new System.Drawing.Size(120, 40);
             this.exportRawDataButton.TabIndex = 105;
@@ -242,7 +266,7 @@ namespace NewEditor.Forms
             // importRawDataButton
             // 
             this.importRawDataButton.Enabled = false;
-            this.importRawDataButton.Location = new System.Drawing.Point(12, 369);
+            this.importRawDataButton.Location = new System.Drawing.Point(12, 454);
             this.importRawDataButton.Name = "importRawDataButton";
             this.importRawDataButton.Size = new System.Drawing.Size(120, 40);
             this.importRawDataButton.TabIndex = 106;
@@ -250,10 +274,30 @@ namespace NewEditor.Forms
             this.importRawDataButton.UseVisualStyleBackColor = true;
             this.importRawDataButton.Click += new System.EventHandler(this.importRawDataButton_Click);
             // 
+            // exportAllRawDataButton
+            // 
+            this.exportAllRawDataButton.Location = new System.Drawing.Point(140, 505);
+            this.exportAllRawDataButton.Name = "exportAllRawDataButton";
+            this.exportAllRawDataButton.Size = new System.Drawing.Size(120, 40);
+            this.exportAllRawDataButton.TabIndex = 112;
+            this.exportAllRawDataButton.Text = "Export All Raw";
+            this.exportAllRawDataButton.UseVisualStyleBackColor = true;
+            this.exportAllRawDataButton.Click += new System.EventHandler(this.exportAllRawDataButton_Click);
+            // 
+            // importAllRawDataButton
+            // 
+            this.importAllRawDataButton.Location = new System.Drawing.Point(140, 454);
+            this.importAllRawDataButton.Name = "importAllRawDataButton";
+            this.importAllRawDataButton.Size = new System.Drawing.Size(120, 40);
+            this.importAllRawDataButton.TabIndex = 113;
+            this.importAllRawDataButton.Text = "Import All Raw";
+            this.importAllRawDataButton.UseVisualStyleBackColor = true;
+            this.importAllRawDataButton.Click += new System.EventHandler(this.importAllRawDataButton_Click);
+            // 
             // statusText
             // 
             this.statusText.AutoSize = true;
-            this.statusText.Location = new System.Drawing.Point(11, 516);
+            this.statusText.Location = new System.Drawing.Point(11, 601);
             this.statusText.Name = "statusText";
             this.statusText.Size = new System.Drawing.Size(0, 16);
             this.statusText.TabIndex = 107;
@@ -283,7 +327,11 @@ namespace NewEditor.Forms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(544, 541);
+            this.ClientSize = new System.Drawing.Size(544, 630);
+            this.Controls.Add(this.importAllRawDataButton);
+            this.Controls.Add(this.exportAllRawDataButton);
+            this.Controls.Add(this.importAllScriptsButton);
+            this.Controls.Add(this.exportAllScriptsButton);
             this.Controls.Add(this.genCommandDatabaseButton);
             this.Controls.Add(this.commandNameSelection3);
             this.Controls.Add(this.statusText);
@@ -335,5 +383,9 @@ namespace NewEditor.Forms
         private System.Windows.Forms.Label statusText;
         private System.Windows.Forms.RadioButton commandNameSelection3;
         private System.Windows.Forms.Button genCommandDatabaseButton;
+        private System.Windows.Forms.Button exportAllScriptsButton;
+        private System.Windows.Forms.Button importAllScriptsButton;
+        private System.Windows.Forms.Button exportAllRawDataButton;
+        private System.Windows.Forms.Button importAllRawDataButton;
     }
 }

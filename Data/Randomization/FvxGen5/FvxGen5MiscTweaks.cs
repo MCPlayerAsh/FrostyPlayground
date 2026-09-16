@@ -18,6 +18,7 @@ namespace NewEditor.Data.Randomization.FvxGen5
         public static void Apply(FvxMiscTweaksSettings misc, StringBuilder log)
         {
             if (misc == null) return;
+            misc.GiveNationalDexAtStart = false;
             if (!misc.FastestText && !misc.GiveNationalDexAtStart && !misc.FastEggHatching
                 && !misc.ForceChallengeMode && !misc.ForgettableHms)
                 return;
